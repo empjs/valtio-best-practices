@@ -11,20 +11,25 @@ export default defineConfig(store => {
           asyncStartup: true,
         },
         exposes: {},
+        remotes: {
+          host: `host@http://${store.server.ip}:1112/emp.json`,
+        },
         shared: {
           react: {
             singleton: true,
-            requiredVersion: '19',
+            requiredVersion: '19.2.4',
+            eager: true,
           },
           'react-dom': {
             singleton: true,
-            requiredVersion: '19',
+            requiredVersion: '19.2.4',
+            eager: true,
           },
         },
       }),
     ],
     server: {
-      port: 2222,
+      port: 1111,
       open: false,
     },
   }

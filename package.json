@@ -19,6 +19,7 @@
     "@empjs/biome-config": "2.3.0",
     "@empjs/cli": "3.12.2",
     "@empjs/plugin-react": "3.12.1",
+    "@rslib/core": "^0.19.3",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "tsup": "8.5.1",

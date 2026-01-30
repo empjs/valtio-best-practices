@@ -4,19 +4,12 @@
   "description": "valtio store",
   "license": "MIT",
   "type": "module",
-  "files": [
-    "dist"
-  ],
-  "maintainers": [
-    "ckken"
-  ],
+  "files": ["dist"],
+  "maintainers": ["ckken"],
   "publishConfig": {
     "access": "public"
   },
-  "keywords": [
-    "valtio",
-    "store"
-  ],
+  "keywords": ["valtio", "store"],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -36,8 +29,16 @@
   },
   "author": "Ken",
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch"
+    "build": "rslib build",
+    "dev": "rslib build --watch"
+  },
+  "devDependencies": {
+    "@rslib/core": "^0.19.3",
+    "rsbuild-plugin-dts": "^0.19.3"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   },
   "dependencies": {
     "derive-valtio": "^0.2.0",

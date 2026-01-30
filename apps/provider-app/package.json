@@ -1,11 +1,16 @@
 {
-  "name": "mf-app",
+  "name": "provider-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
+  "dependencies": {
+    "@empjs/valtio-store": "workspace:*",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
   "scripts": {
-    "dev": "emp dev -ev aa=1 -ev bb=2 -ev cc=3",
+    "dev": "emp dev",
     "build": "emp build",
     "start": "emp serve",
     "stat": "emp build --analyze",
