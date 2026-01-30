@@ -19,6 +19,7 @@
     "@empjs/valtio": "workspace:*",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-syntax-highlighter": "^16.1.0",
     "wouter": "^3.9.0"
   },
   "devDependencies": {

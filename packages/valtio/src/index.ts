@@ -2,7 +2,7 @@ import {derive} from 'derive-valtio'
 import {useMemo} from 'react'
 import type {Snapshot} from 'valtio'
 import {proxy, ref, snapshot, subscribe, useSnapshot} from 'valtio'
-import {devtools, proxyMap, proxySet, subscribeKey} from 'valtio/utils'
+import {deepClone, devtools, proxyMap, proxySet, subscribeKey} from 'valtio/utils'
 import type {History} from 'valtio-history'
 import {proxyWithHistory} from 'valtio-history'
 
@@ -166,8 +166,9 @@ export function enhanceStore<T extends object>(store: T, initialState?: T): T & 
   }
 
   enhanced.clone = function () {
-    const snap = snapshot(store)
-    const cloned = JSON.parse(JSON.stringify(snap)) as T
+    const snap = snapshot(store) as T
+    // deepClone 能正确处理 ref、Date 等，比 JSON 往返更可靠（valtio/utils）
+    const cloned = deepClone(snap) as T
     return enhanceStore(proxy(cloned), cloned)
   }
 
