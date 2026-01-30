@@ -52,3 +52,54 @@ function List() {
   )
 }
 `
+
+export const performanceSnippetEn = `// ========== 1. Long list + batch bulk ops (call flow) ==========
+import { useStore } from '@empjs/valtio'
+
+type Item = { id: number; text: string; done: boolean }
+
+const [snap, store] = useStore(() => ({
+  items: [] as Item[],
+}))
+
+// Bulk add: batch merges multiple writes, one notification, avoid re-render per push
+function addMany(n: number) {
+  store.batch((s) => {
+    const start = s.items.length
+    for (let i = 0; i < n; i++) {
+      s.items.push({ id: start + i, text: \`Item \${start + i}\`, done: false })
+    }
+  })
+}
+
+// Bulk remove: splice inside batch, one notification
+function removeFirst(n: number) {
+  store.batch((s) => { s.items.splice(0, n) })
+}
+
+// Select all / deselect: batch loop update, one notification
+function toggleAll(done: boolean) {
+  store.batch((s) => { s.items.forEach((item) => { item.done = done }) })
+}
+
+// ========== 2. Long list render: content-visibility and virtual list ==========
+// Flow tips: 1) Use batch for bulk add/remove/update  2) Fixed height + overflow-auto on list  3) contentVisibility: auto per row or virtua
+function List() {
+  const snap = store.useSnapshot()
+  return (
+    <div className="max-h-96 overflow-auto">
+      {snap.items.map((item) => (
+        <div
+          key={item.id}
+          className="border-b border-slate-200 px-2 py-1 flex items-center gap-2"
+          style={{ contentVisibility: 'auto' }}
+        >
+          <input type="checkbox" checked={item.done} onChange={...} />
+          <span className="tabular-nums text-slate-700">{item.id}</span>
+          <span>{item.text}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+`

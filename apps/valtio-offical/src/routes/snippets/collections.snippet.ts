@@ -21,3 +21,23 @@ const [snap, store] = useStore(() => ({
 // 写：store.map.set('b', 2)、store.tagSet.add('y')、store.map.delete('a') — 会触发 UI 更新
 // 闭环：用户点击 → store.map.set / store.tagSet.add → 订阅者收到新快照 → 组件用 snap 重渲染
 `
+
+export const collectionsSnippetEn = `// ========== 1. Import ==========
+// Create proxy-able Map/Set; use in store or component, add/delete/update triggers subscription
+import { createMap, createSet, useStore } from '@empjs/valtio'
+
+// ========== 2. Create at module level or inside store ==========
+const map = createMap<string, number>([['a', 1]])
+const tagSet = createSet<string>(['x'])
+
+// ========== 3. Use inside store as state (call flow) ==========
+// Note: avoid key name "set", conflicts with store.set(key, value)
+const [snap, store] = useStore(() => ({
+  map: createMap([['a', 1]]),
+  tagSet: createSet(['x']),
+}))
+
+// Read: snap.map.get('a'), snap.tagSet.has('x'), Array.from(snap.map.entries()), etc.
+// Write: store.map.set('b', 2), store.tagSet.add('y'), store.map.delete('a') — triggers UI update
+// Flow: user click → store.map.set / store.tagSet.add → subscribers get new snapshot → component re-renders with snap
+`

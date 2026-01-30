@@ -53,3 +53,55 @@ function OnlyName() {
 // batch：一次操作要改多个字段时，减少中间渲染
 // 细粒度：大 store 时尽量每个组件只读自己需要的字段，无需手写 selector
 `
+
+export const subscribeSnippetEn = `// ========== 1. Import and concepts ==========
+import { createStore, useStore } from '@empjs/valtio'
+
+// Subscription API flow:
+// - subscribeKey / subscribeKeys: outside React, listen to specific keys (persist, logger, sync with external)
+// - batch: merge multiple writes into one notification, fewer intermediate renders
+// - useSnapshot: subscribes only to paths actually accessed; read only what you need for fine-grained updates
+
+// ========== 2. subscribeKey: single key ==========
+const store = createStore({ count: 0, name: '' })
+// Subscribe to one key, callback gets latest value; returns Unsubscribe (e.g. return unsub in useEffect)
+const unsub = store.subscribeKey('count', (value) => {
+  console.log('count changed', value)
+})
+useEffect(() => {
+  const unsub = store.subscribeKey('count', (v) => setLog(prev => prev + \`count=\${v}\\n\`))
+  return unsub
+}, [store])
+
+// ========== 3. subscribeKeys: multiple keys ==========
+const unsub2 = store.subscribeKeys(['count', 'name'], (key, value) => {
+  console.log(key, value)
+})
+useEffect(() => {
+  const unsub = store.subscribeKeys(['count', 'name'], (k, v) => setLog(prev => prev + \`\${k}=\${v}\\n\`))
+  return unsub
+}, [store])
+
+// ========== 4. batch: bulk update (fewer renders in flow) ==========
+// Multiple writes inside batch trigger one subscription; no intermediate useSnapshot re-renders
+store.batch((s) => {
+  s.count = 1
+  s.name = 'a'
+})
+
+// ========== 5. Fine-grained: read only used fields ==========
+// useSnapshot(store) subscribes only to paths you access; OnlyCount does not re-render when store.name changes
+function OnlyCount() {
+  const snap = store.useSnapshot()
+  return <span>{snap.count}</span>
+}
+function OnlyName() {
+  const snap = store.useSnapshot()
+  return <span>{snap.name}</span>
+}
+
+// ========== 6. When to use ==========
+// subscribeKey / subscribeKeys: non-React logic (persist, logger, external sync)
+// batch: when one action updates many fields, reduce intermediate renders
+// Fine-grained: with large store, each component reads only what it needs, no manual selector
+`

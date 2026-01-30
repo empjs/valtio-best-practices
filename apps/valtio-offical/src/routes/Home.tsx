@@ -1,6 +1,7 @@
 import type {ReactNode} from 'react'
 import {useState} from 'react'
 import {Link} from 'wouter'
+import {useT} from '../i18n'
 
 const installCommands = [
   {cmd: 'pnpm add @empjs/valtio', label: 'pnpm'},
@@ -12,22 +13,22 @@ const installCommands = [
 type InstallLabel = (typeof installCommands)[number]['label']
 
 const cards = [
-  {href: '/create-store', title: 'createStore', desc: '全局 store：常规 / history / derive，store.useSnapshot()'},
-  {href: '/use-store', title: 'useStore', desc: '局部 store：[snap, store]，支持 history / derive / 异步'},
-  {href: '/collections', title: 'collections', desc: 'createMap / createSet'},
-  {href: '/subscribe', title: 'subscribe', desc: 'subscribeKey、subscribeKeys、batch、细粒度订阅'},
-  {href: '/performance', title: 'performance', desc: '长列表：batch 批量操作、content-visibility'},
+  {href: '/create-store', titleKey: 'home.cards.createStore', descKey: 'home.cards.createStoreDesc'},
+  {href: '/use-store', titleKey: 'home.cards.useStore', descKey: 'home.cards.useStoreDesc'},
+  {href: '/collections', titleKey: 'home.cards.collections', descKey: 'home.cards.collectionsDesc'},
+  {href: '/subscribe', titleKey: 'home.cards.subscribe', descKey: 'home.cards.subscribeDesc'},
+  {href: '/performance', titleKey: 'home.cards.performance', descKey: 'home.cards.performanceDesc'},
 ] as const
 
 /** 与原生 Valtio 相比的核心优势 */
 const advantages: Array<{
-  title: string
-  desc: string
+  titleKey: string
+  descKey: string
   icon: (className: string) => ReactNode
 }> = [
   {
-    title: '极大减少样板代码',
-    desc: '无需每次手动 proxy + useSnapshot + subscribe，store 直接拥有 set、update、reset、persist 等实用方法',
+    titleKey: 'home.adv.boilerplate.title',
+    descKey: 'home.adv.boilerplate.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -45,8 +46,8 @@ const advantages: Array<{
     ),
   },
   {
-    title: '一流 TypeScript 支持',
-    desc: '三种模式（普通 / 历史 / 派生）返回类型精确推导，几乎零 as 断言',
+    titleKey: 'home.adv.typescript.title',
+    descKey: 'home.adv.typescript.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -65,8 +66,8 @@ const advantages: Array<{
     ),
   },
   {
-    title: '一行代码派生状态',
-    desc: '通过 derive 选项自动生成响应式计算属性',
+    titleKey: 'home.adv.derive.title',
+    descKey: 'home.adv.derive.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -84,8 +85,8 @@ const advantages: Array<{
     ),
   },
   {
-    title: '内置完整撤销/重做',
-    desc: 'useSnapshot 直接返回 undo、redo、isUndoEnabled 等控制',
+    titleKey: 'home.adv.undo.title',
+    descKey: 'home.adv.undo.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -103,8 +104,8 @@ const advantages: Array<{
     ),
   },
   {
-    title: '持久化只需一行',
-    desc: "store.persist('key') 自动双向同步 localStorage",
+    titleKey: 'home.adv.persist.title',
+    descKey: 'home.adv.persist.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -123,8 +124,8 @@ const advantages: Array<{
     ),
   },
   {
-    title: '组件内局部状态',
-    desc: 'useStore Hook 支持 history / derive 模式，非常适合表单、编辑器、画板等场景',
+    titleKey: 'home.adv.local.title',
+    descKey: 'home.adv.local.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -145,8 +146,8 @@ const advantages: Array<{
     ),
   },
   {
-    title: '实用工具齐全',
-    desc: '深层路径更新、多键订阅、深克隆、智能 JSON 序列化、调试输出等',
+    titleKey: 'home.adv.tools.title',
+    descKey: 'home.adv.tools.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -164,8 +165,8 @@ const advantages: Array<{
     ),
   },
   {
-    title: '开发友好',
-    desc: '自动开启 DevTools，内置 createMap / createSet 集合代理',
+    titleKey: 'home.adv.devtools.title',
+    descKey: 'home.adv.devtools.desc',
     icon: cls => (
       <svg
         className={cls}
@@ -255,6 +256,7 @@ const docCardIcons: Record<string, (cls: string) => ReactNode> = {
 }
 
 export function Home() {
+  const t = useT()
   const [installTab, setInstallTab] = useState<InstallLabel>('pnpm')
   const [copied, setCopied] = useState(false)
   const activeCmd = installCommands.find(c => c.label === installTab)!
@@ -300,23 +302,18 @@ export function Home() {
         <div className="relative px-6 py-10 sm:py-12">
           <h1 className="mx-auto mb-4 max-w-4xl text-center text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
             <span className="hero-gradient-text">
-              Valtio Enhanced Store
+              {t('home.heroTitle')}
             </span>
           </h1>
           <p className="mx-auto mb-4 max-w-2xl text-lg font-medium text-slate-800 dark:text-slate-200">
-            Valtio 的强大增强版 —— 更少样板代码，更高生产力
+            {t('home.heroDesc')}
           </p>
-          {/* <p className="mx-auto mb-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
-          基于 Valtio
-          的细粒度响应式机制，提供开箱即用的高级功能：历史回溯、自动派生、持久化、嵌套更新、克隆、重置等，让状态管理体验更接近
-          Zustand / Pinia，但完全保留 Valtio 的轻量与快照优势。
-        </p> */}
 
           <p className="mx-auto mb-4 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            依赖 React 18+，与 valtio、derive-valtio、valtio-history 一起使用。
+            {t('home.heroDeps')}
           </p>
           <div className="mx-auto max-w-2xl rounded-xl border border-slate-400/50 bg-slate-200/80 p-3 backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-900/80 sm:p-4 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
-            <div role="tablist" aria-label="包管理器" className="flex shrink-0 flex-wrap gap-1 sm:gap-2">
+            <div role="tablist" aria-label={t('home.installTabs')} className="flex shrink-0 flex-wrap gap-1 sm:gap-2">
               {installCommands.map(({label}) => {
                 const isActive = installTab === label
                 return (
@@ -353,7 +350,7 @@ export function Home() {
                 type="button"
                 onClick={handleCopyInstall}
                 className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded text-slate-400 transition-colors duration-200 hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 dark:text-slate-400 dark:hover:text-orange-300"
-                aria-label={copied ? '已复制' : '复制命令'}
+                aria-label={copied ? t('home.copied') : t('home.copy')}
               >
                 {copied ? (
                   <svg
@@ -395,14 +392,10 @@ export function Home() {
         {/* 顶部渐变装饰线 */}
 
         <h2 id="advantages-heading" className="mx-auto mb-2 max-w-2xl text-2xl font-semibold sm:text-3xl">
-          <span className="text-slate-600 dark:text-slate-300">与原生 </span>
-          <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-blue-300 dark:to-orange-400">
-            Valtio
-          </span>
-          <span className="text-slate-600 dark:text-slate-300"> 相比的核心优势</span>
+          {t('home.advantagesTitle')}
         </h2>
         <p className="mx-auto mb-2 max-w-xl text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
-          更少样板、更强类型、内置历史与派生，开箱即用
+          {t('home.advantagesSub')}
         </p>
         {/* 副标题下渐变线 */}
         <div
@@ -410,10 +403,9 @@ export function Home() {
           aria-hidden
         />
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {advantages.map(({title, desc, icon}) => (
-            <li key={title} className="flex">
+          {advantages.map(({titleKey, descKey, icon}) => (
+            <li key={titleKey} className="flex">
               <div className="group relative flex h-full w-full flex-row items-start gap-4 overflow-hidden rounded-2xl border border-gray-200 bg-white/95 p-5 text-left shadow-md shadow-slate-200/50 transition-all duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-200/20 hover:ring-2 hover:ring-blue-400/30 hover:ring-offset-2 hover:ring-offset-white dark:border-slate-600 dark:bg-slate-800/95 dark:shadow-slate-900/50 dark:hover:border-blue-500/40 dark:hover:bg-slate-800/90 dark:hover:shadow-xl dark:hover:shadow-blue-900/20 dark:hover:ring-blue-400/30 dark:ring-offset-slate-900">
-                {/* 卡片左上角渐变光晕 */}
                 <span
                   className="pointer-events-none absolute -left-12 -top-12 h-24 w-24 rounded-full bg-gradient-to-br from-blue-400/20 to-orange-400/20 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:from-blue-500/30 dark:to-orange-500/30"
                   aria-hidden
@@ -426,9 +418,9 @@ export function Home() {
                 </span>
                 <div className="relative min-w-0 flex-1 text-left">
                   <h3 className="mb-1 font-semibold text-slate-900 transition-colors duration-200 group-hover:text-blue-700 dark:text-slate-100 dark:group-hover:text-blue-300">
-                    {title}
+                    {t(titleKey)}
                   </h3>
-                  <p className="min-h-[2.5rem] text-sm leading-relaxed text-slate-600 dark:text-slate-400">{desc}</p>
+                  <p className="min-h-[2.5rem] text-sm leading-relaxed text-slate-600 dark:text-slate-400">{t(descKey)}</p>
                 </div>
               </div>
             </li>
@@ -440,13 +432,12 @@ export function Home() {
         {/* 顶部渐变装饰线 */}
         <div className="mx-auto mb-6 h-1 w-24 rounded-full" aria-hidden />
         <h2 id="docs-nav-heading" className="mx-auto mb-2 max-w-2xl text-2xl font-semibold sm:text-3xl">
-          <span className="text-slate-600 dark:text-slate-300">核心</span>
           <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-blue-300 dark:to-orange-400">
-            用法一览
+            {t('home.docSectionTitle')}
           </span>
         </h2>
         <p className="mx-auto mb-2 max-w-xl text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
-          createStore · useStore · collections · subscribe · performance —— 一点即达，即查即用
+          {t('home.docSectionSub')}
         </p>
         {/* 副标题下渐变线 */}
         <div
@@ -454,7 +445,7 @@ export function Home() {
           aria-hidden
         />
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map(({href, title, desc}) => {
+          {cards.map(({href, titleKey, descKey}) => {
             const slug = href.slice(1) || 'create-store'
             const Icon = docCardIcons[slug] ?? docCardIcons['create-store']
             return (
@@ -463,7 +454,6 @@ export function Home() {
                   href={href}
                   className="group relative flex h-full w-full flex-row cursor-pointer items-start gap-4 overflow-hidden rounded-2xl border border-gray-200 bg-white/95 p-5 shadow-md shadow-slate-200/50 transition-all duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-200/20 hover:ring-2 hover:ring-blue-400/30 hover:ring-offset-2 hover:ring-offset-white focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-600 dark:bg-slate-800/95 dark:shadow-slate-900/50 dark:hover:border-blue-500/40 dark:hover:bg-slate-800/90 dark:hover:shadow-xl dark:hover:shadow-blue-900/20 dark:hover:ring-blue-400/30 dark:focus-visible:ring-offset-slate-900"
                 >
-                  {/* 卡片左上角渐变光晕 */}
                   <span
                     className="pointer-events-none absolute -left-12 -top-12 h-24 w-24 rounded-full bg-gradient-to-br from-blue-400/20 to-orange-400/20 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100 dark:from-blue-500/30 dark:to-orange-500/30"
                     aria-hidden
@@ -476,9 +466,9 @@ export function Home() {
                   </span>
                   <div className="relative min-w-0 flex-1 text-left">
                     <h3 className="mb-1 font-semibold text-slate-900 transition-colors duration-200 group-hover:text-blue-700 dark:text-slate-100 dark:group-hover:text-blue-300">
-                      {title}
+                      {t(titleKey)}
                     </h3>
-                    <p className="min-h-[2.5rem] text-sm leading-relaxed text-slate-600 dark:text-slate-400">{desc}</p>
+                    <p className="min-h-[2.5rem] text-sm leading-relaxed text-slate-600 dark:text-slate-400">{t(descKey)}</p>
                   </div>
                 </Link>
               </li>

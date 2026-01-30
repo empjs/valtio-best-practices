@@ -1,5 +1,8 @@
 import {createContext, useContext} from 'react'
 import {Link, useLocation} from 'wouter'
+import {localeStore} from '../stores/localeStore'
+import type {Locale} from '../i18n/translations'
+import {useT} from '../i18n'
 
 export const ThemeContext = createContext<{isDark: boolean; onToggleTheme: () => void} | null>(null)
 export function useTheme() {
@@ -10,14 +13,14 @@ export function useTheme() {
 
 const GITHUB_URL = 'https://github.com/empjs/valtio-best-practices'
 
-const links = [
-  {href: '/', label: '首页'},
-  {href: '/create-store', label: '创建'},
-  {href: '/use-store', label: '使用'},
-  {href: '/collections', label: '集合'},
-  {href: '/subscribe', label: '订阅'},
-  {href: '/performance', label: '性能'},
-] as const
+const links: Array<{href: string; labelKey: string}> = [
+  {href: '/', labelKey: 'nav.home'},
+  {href: '/create-store', labelKey: 'nav.createStore'},
+  {href: '/use-store', labelKey: 'nav.useStore'},
+  {href: '/collections', labelKey: 'nav.collections'},
+  {href: '/subscribe', labelKey: 'nav.subscribe'},
+  {href: '/performance', labelKey: 'nav.performance'},
+]
 
 function SunIcon() {
   return (
@@ -76,6 +79,12 @@ const iconBtnClass =
 export function Nav() {
   const [location] = useLocation()
   const {isDark, onToggleTheme} = useTheme()
+  const t = useT()
+  const snap = localeStore.useSnapshot()
+
+  const toggleLocale = () => {
+    localeStore.set('locale', (snap.locale === 'zh' ? 'en' : 'zh') as Locale)
+  }
 
   return (
     <nav
@@ -93,7 +102,7 @@ export function Nav() {
           <span className="hidden text-gray-300 dark:text-slate-600 sm:inline" aria-hidden>
             |
           </span>
-          {links.map(({href, label}) => {
+          {links.map(({href, labelKey}) => {
             const isActive = location === href
             return (
               <Link
@@ -105,7 +114,7 @@ export function Nav() {
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100'
                 }`}
               >
-                {label}
+                {t(labelKey)}
               </Link>
             )
           })}
@@ -113,9 +122,18 @@ export function Nav() {
         <div className="flex items-center gap-0.5 border-l border-gray-200 pl-2 dark:border-slate-600 sm:gap-1 sm:pl-3">
           <button
             type="button"
+            onClick={toggleLocale}
+            className={iconBtnClass}
+            aria-label={t('nav.langSwitch')}
+            title={t('nav.langSwitch')}
+          >
+            <span className="text-sm font-medium">{snap.locale === 'zh' ? 'EN' : '中'}</span>
+          </button>
+          <button
+            type="button"
             onClick={onToggleTheme}
             className={iconBtnClass}
-            aria-label={isDark ? '切换到浅色' : '切换到深色'}
+            aria-label={isDark ? t('nav.themeToLight') : t('nav.themeToDark')}
           >
             {isDark ? <SunIcon /> : <MoonIcon />}
           </button>
@@ -124,7 +142,7 @@ export function Nav() {
             target="_blank"
             rel="noopener noreferrer"
             className={iconBtnClass}
-            aria-label="在 GitHub 上查看"
+            aria-label={t('nav.github')}
           >
             <GitHubIcon />
           </a>

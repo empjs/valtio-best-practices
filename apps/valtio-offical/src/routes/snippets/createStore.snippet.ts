@@ -53,3 +53,55 @@ const asyncStore = createStore({
 })
 // 也可把异步方法写在 store 内，this 指向 store，调用 store.loadUser() 即可
 `
+
+export const createStoreSnippetEn = `// ========== 1. Import ==========
+// Types inferred from initialState; global singleton, components subscribe via store.useSnapshot() or useSnapshot(store)
+import { createStore } from '@empjs/valtio'
+
+// ========== 2. Define store (regular) ==========
+// Usually at module top or in stores/*.ts; store type is { count, name } & StoreBaseMethods, useSnapshot returns read-only snapshot
+const store = createStore(
+  { count: 0, name: '' },
+  { name: 'MyStore', devtools: true }
+)
+
+// ========== 3. Call flow: read (snap) and update (store methods) in components ==========
+// Read: snap from useSnapshot(store), keys constrained by keyof T
+// Write: store.set('count', value) or store.update({ count, name }) → triggers re-render for subscribers
+function Counter() {
+  const snap = store.useSnapshot()
+  return <span>{snap.count}</span>
+}
+function Controls() {
+  const snap = store.useSnapshot()
+  return (
+    <button onClick={() => store.set('count', snap.count + 1)}>+1</button>
+    // or batch: store.update({ count: snap.count + 1, name: 'x' })
+  )
+}
+
+// ========== 4. With history: options.history ==========
+// Returned store has .value (writable), .undo(), .redo(); read snap.value.count, write store.value.count = x
+const historyStore = createStore(
+  { count: 0 },
+  { history: { limit: 50 } }
+)
+// In component: snap.isUndoEnabled / snap.isRedoEnabled to disable undo/redo buttons
+
+// ========== 5. With derive: options.derive ==========
+// Returns { base, derived }; write base.update(), read base.useSnapshot() / derived.useSnapshot()
+const { base, derived } = createStore(
+  { a: 1, b: 2 },
+  { derive: (get, proxy) => ({ sum: get(proxy).a + get(proxy).b }) }
+)
+// In component: useSnapshot(base) for base, useSnapshot(derived) for derived; derived updates when base changes
+
+// ========== 6. Async (regular store + manual loading/error) ==========
+// Before request: store.update({ loading: true, error: null }); on success/failure update user and loading/error
+const asyncStore = createStore({
+  user: null as User | null,
+  loading: false,
+  error: null as Error | null,
+})
+// Or put async method on store, this refers to store, call store.loadUser()
+`

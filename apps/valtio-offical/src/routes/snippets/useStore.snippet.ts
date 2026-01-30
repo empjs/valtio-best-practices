@@ -65,3 +65,67 @@ function UserPanel() {
 }
 // 闭环：点击按钮 → store.loadUser() → this.loading = true → UI 显示 Loading → 请求完成 → this.user / this.error、this.loading = false → UI 重渲染
 `
+
+export const useStoreSnippetEn = `// ========== 1. Import ==========
+// Each component instance has its own store; [snap, store] types inferred from initialState
+import { useStore } from '@empjs/valtio'
+
+// ========== 2. Regular usage and call flow ==========
+// Lazy init: useStore(() => ({ count: 0 }))
+// Flow: store created on mount → read snap.count to render → user click → store.set('count', n+1) → this instance re-renders
+function LocalCounter() {
+  const [snap, store] = useStore({ count: 0 })
+  return (
+    <div>
+      <span>{snap.count}</span>
+      <button onClick={() => store.set('count', snap.count + 1)}>+1</button>
+    </div>
+  )
+}
+// Two <LocalCounter /> each keep their own count, independent
+
+// ========== 3. When to use createStore vs useStore ==========
+// Singleton, shared across components → createStore
+// Local state per instance (forms, editors, canvas) → useStore
+
+// ========== 4. With history: useStore(initialState, { history: { limit } }) ==========
+const [snap, store] = useStore(() => ({ count: 0 }), { history: { limit: 50 } })
+// Read: snap.value.count  Write: store.value.count = x  Undo/redo: store.undo() / store.redo()
+
+// ========== 5. With derive: useStore(initialState, { derive }) ==========
+const [baseSnap, baseStore, derivedSnap] = useStore(
+  () => ({ a: 1, b: 2 }),
+  { derive: (get, base) => ({ sum: get(base).a + get(base).b }) }
+)
+// Read base: baseSnap.a; read derived: derivedSnap.sum  Write: baseStore.update({ a: 2 })
+
+// ========== 6. Async: regular useStore + manual loading/error ==========
+// Option 1: manual store.update. Before request store.update({ loading: true, error: null }); on success store.update({ user, loading: false }); on failure store.update({ error, loading: false })
+// Option 2: put async method on store, this refers to store, call store.loadUser() in component
+function UserPanel() {
+  const [snap, store] = useStore(() => ({
+    user: null as { name: string } | null,
+    loading: false,
+    error: null as Error | null,
+    loadUser() {
+      this.loading = true
+      this.error = null
+      fetch('/api/user')
+        .then(res => (res.ok ? res.json() : Promise.reject(new Error(res.statusText))))
+        .then(user => { this.user = user; this.loading = false })
+        .catch(e => { this.error = e instanceof Error ? e : new Error('Unknown'); this.loading = false })
+    },
+  }))
+  if (snap.loading) return <p>Loading…</p>
+  if (snap.error) return <p role="alert">Error: {snap.error.message}</p>
+  return (
+    <div>
+      {snap.user ? <p>user: {snap.user.name}</p> : <p>Not loaded</p>}
+      <button onClick={() => store.loadUser()} disabled={snap.loading}>
+        {snap.user ? 'Reload' : 'Load user'}
+      </button>
+    </div>
+  )
+}
+// Flow: click → store.loadUser() → this.loading = true → UI shows Loading → request done → this.user / this.error, this.loading = false → re-render
+`

@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react'
 import {Route, Switch} from 'wouter'
 import {Nav, ThemeContext} from './components/Nav'
+import {useT} from './i18n'
 import {Collections, CreateStore, Home, Performance, Subscribe, UseStore} from './routes/index'
 
 const THEME_KEY = 'valtio-theme'
@@ -15,6 +16,7 @@ function readTheme(): 'light' | 'dark' {
 
 const App = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>(readTheme)
+  const t = useT()
   const isDark = theme === 'dark'
 
   useEffect(() => {
@@ -41,7 +43,7 @@ const App = () => {
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:ring-2 focus:ring-slate-400 dark:focus:bg-slate-800 dark:focus:ring-slate-500"
         >
-          跳到主内容
+          {t('app.skipToMain')}
         </a>
         <Nav />
         <main id="main">
@@ -55,7 +57,7 @@ const App = () => {
           </Switch>
         </main>
         <footer className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-          © 2026 EMP Team. MIT License.
+          {t('app.footer')}
         </footer>
       </div>
     </ThemeContext.Provider>

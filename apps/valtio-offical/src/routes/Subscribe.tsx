@@ -2,7 +2,9 @@ import {useStore} from '@empjs/valtio'
 import {useEffect, useRef, useState} from 'react'
 import {CodeBlock} from '../components/CodeBlock'
 import {PageWithDemo} from '../components/PageWithDemo'
-import {subscribeSnippet} from './snippets'
+import {useT} from '../i18n'
+import {localeStore} from '../stores/localeStore'
+import {getSubscribeSnippet} from './snippets'
 
 const cardChip =
   'rounded border border-gray-200 bg-white px-2 py-1 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
@@ -13,35 +15,38 @@ interface StoreWithCountName {
 }
 
 /** 只读 count，用于演示细粒度：改 name 时此组件不重渲染 */
-function OnlyCount({store}: {store: StoreWithCountName}) {
+function OnlyCount({store, renderLabel}: {store: StoreWithCountName; renderLabel: string}) {
   const snap = store.useSnapshot()
   const renderCount = useRef(0)
   renderCount.current += 1
   return (
     <div className={cardChip}>
       <span className="tabular-nums text-slate-900 dark:text-slate-100">count: {snap.count}</span>
-      <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">渲染 #{renderCount.current}</span>
+      <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">{renderLabel}{renderCount.current}</span>
     </div>
   )
 }
 
 /** 只读 name，用于演示细粒度：改 count 时此组件不重渲染 */
-function OnlyName({store}: {store: StoreWithCountName}) {
+function OnlyName({store, renderLabel}: {store: StoreWithCountName; renderLabel: string}) {
   const snap = store.useSnapshot()
   const renderCount = useRef(0)
   renderCount.current += 1
   return (
     <div className={cardChip}>
       <span className="text-slate-900 dark:text-slate-100">name: {snap.name}</span>
-      <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">渲染 #{renderCount.current}</span>
+      <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">{renderLabel}{renderCount.current}</span>
     </div>
   )
 }
 
 export function Subscribe() {
+  const t = useT()
+  const locale = localeStore.useSnapshot().locale
   const [snap, store] = useStore(() => ({count: 0, name: 'x'}))
   const [keyLog, setKeyLog] = useState('')
   const [keysLog, setKeysLog] = useState('')
+  const renderLabel = t('common.renderCount')
 
   useEffect(() => {
     const unsub = store.subscribeKey('count', value => {
@@ -58,26 +63,22 @@ export function Subscribe() {
   }, [store])
 
   const btn =
-    'cursor-pointer rounded border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-300 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+    'cursor-pointer rounded border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700 dark:focus-visible:ring-offset-slate-900'
 
   const demo = (
     <section
       className="rounded-xl border border-gray-200 bg-white/95 p-4 shadow-md dark:border-slate-600 dark:bg-slate-800"
       aria-live="polite"
     >
-      <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果</h3>
+      <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">{t('common.demoResult')}</h3>
 
-      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-        细粒度订阅（只读 count / name，看渲染次数）
-      </p>
+      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{t('subscribe.fineGrained')}</p>
       <div className="mb-3 flex flex-wrap gap-2">
-        <OnlyCount store={store} />
-        <OnlyName store={store} />
+        <OnlyCount store={store} renderLabel={renderLabel} />
+        <OnlyName store={store} renderLabel={renderLabel} />
       </div>
 
-      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-        subscribeKey(&apos;count&apos;) 日志
-      </p>
+      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{t('subscribe.keyLog')}</p>
       <pre
         className="mb-3 max-h-20 overflow-auto rounded border border-blue-200/60 bg-blue-50/80 px-2 py-1 text-xs text-slate-600 dark:border-blue-800/40 dark:bg-blue-950/60 dark:text-slate-400"
         aria-live="polite"
@@ -85,9 +86,7 @@ export function Subscribe() {
         {keyLog || '—'}
       </pre>
 
-      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-        subscribeKeys([&apos;count&apos;, &apos;name&apos;]) 日志
-      </p>
+      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{t('subscribe.keysLog')}</p>
       <pre
         className="mb-3 max-h-20 overflow-auto rounded border border-blue-200/60 bg-blue-50/80 px-2 py-1 text-xs text-slate-600 dark:border-blue-800/40 dark:bg-blue-950/60 dark:text-slate-400"
         aria-live="polite"
@@ -97,10 +96,10 @@ export function Subscribe() {
 
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => store.set('count', snap.count + 1)} className={btn}>
-          count+1
+          {t('subscribe.countPlus')}
         </button>
         <button type="button" onClick={() => store.set('name', snap.name === 'x' ? 'y' : 'x')} className={btn}>
-          name 切换
+          {t('subscribe.nameToggle')}
         </button>
         <button
           type="button"
@@ -112,7 +111,7 @@ export function Subscribe() {
           }
           className={btn}
         >
-          batch reset
+          {t('subscribe.batchReset')}
         </button>
       </div>
     </section>
@@ -120,12 +119,12 @@ export function Subscribe() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">subscribe</h1>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">{t('subscribe.title')}</h1>
       <p className="mb-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
-        subscribeKey / subscribeKeys、batch、以及 useSnapshot 的细粒度订阅（只读用到的字段）。
+        {t('subscribe.intro')}
       </p>
 
-      <CodeBlock code={subscribeSnippet} title="完整示例（导入 → subscribeKey/Keys → batch → 细粒度订阅 → 何时用，含调用闭环与中文提示）" />
+      <CodeBlock code={getSubscribeSnippet(locale)} title={t('subscribe.codeTitle')} />
     </PageWithDemo>
   )
 }

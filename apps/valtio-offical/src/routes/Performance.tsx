@@ -1,7 +1,9 @@
 import {useStore} from '@empjs/valtio'
 import {CodeBlock} from '../components/CodeBlock'
 import {PageWithDemo} from '../components/PageWithDemo'
-import {performanceSnippet} from './snippets'
+import {useT} from '../i18n'
+import {localeStore} from '../stores/localeStore'
+import {getPerformanceSnippet} from './snippets'
 
 const INITIAL_COUNT = 500
 
@@ -14,6 +16,8 @@ function genItems(start: number, count: number): {id: number; text: string; done
 }
 
 export function Performance() {
+  const t = useT()
+  const locale = localeStore.useSnapshot().locale
   const [snap, store] = useStore(() => ({
     items: genItems(0, INITIAL_COUNT),
   }))
@@ -49,26 +53,26 @@ export function Performance() {
   const allDone = snap.items.length > 0 && snap.items.every(item => item.done)
 
   const btn =
-    'cursor-pointer rounded border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+    'cursor-pointer rounded border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700 dark:focus-visible:ring-offset-slate-900'
 
   const demo = (
     <section
       className="rounded-xl border border-gray-200 bg-white/95 p-4 shadow-md dark:border-slate-600 dark:bg-slate-800"
       aria-live="polite"
     >
-      <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果：长列表</h3>
+      <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{t('performance.demoTitle')}</h3>
       <p className="mb-2 tabular-nums text-xs text-slate-500 dark:text-slate-400">
-        共 {snap.items.length} 条，用 batch 批量增删、content-visibility 优化渲染。
+        {t('performance.totalItems').replace('{n}', String(snap.items.length))}
       </p>
       <div className="mb-3 flex flex-wrap gap-2">
         <button type="button" onClick={() => addMany(100)} className={btn}>
-          添加 100 条
+          {t('performance.add100')}
         </button>
         <button type="button" onClick={() => removeFirst(100)} disabled={snap.items.length === 0} className={btn}>
-          删除前 100 条
+          {t('performance.remove100')}
         </button>
         <button type="button" onClick={() => toggleAll(!allDone)} disabled={snap.items.length === 0} className={btn}>
-          {allDone ? '取消全选' : '全选'}
+          {allDone ? t('performance.deselectAll') : t('performance.selectAll')}
         </button>
       </div>
       <div
@@ -85,7 +89,7 @@ export function Performance() {
               type="checkbox"
               checked={item.done}
               onChange={() => toggleOne(item.id)}
-              aria-label={`Item ${item.id} 完成`}
+              aria-label={t('performance.itemDone').replace('{id}', String(item.id))}
               className="rounded border-slate-300 focus-visible:ring-2 focus-visible:ring-slate-400"
             />
             <span className="w-12 shrink-0 tabular-nums text-xs text-slate-500 dark:text-slate-400">{item.id}</span>
@@ -98,15 +102,12 @@ export function Performance() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">performance</h1>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">{t('performance.title')}</h1>
       <p className="mb-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
-        长列表场景：用 batch 做批量增删改、content-visibility 优化渲染；大量数据可配合虚拟列表（如 virtua）。
+        {t('performance.intro')}
       </p>
 
-      <CodeBlock
-        code={performanceSnippet}
-        title="完整示例（batch 批量增删/全选 → content-visibility 渲染，含调用闭环与中文提示）"
-      />
+      <CodeBlock code={getPerformanceSnippet(locale)} title={t('performance.codeTitle')} />
     </PageWithDemo>
   )
 }
