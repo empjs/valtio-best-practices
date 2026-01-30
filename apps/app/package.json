@@ -4,10 +4,6 @@
   "description": "",
   "main": "index.js",
   "type": "module",
-  "dependencies": {
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
-  },
   "scripts": {
     "dev": "emp dev",
     "build": "emp build",
@@ -18,5 +14,14 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@empjs/valtio-store": "workspace:*",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "wouter": "^3.9.0"
+  },
+  "devDependencies": {
+    "@empjs/plugin-tailwindcss": "^1.2.7"
+  }
 }

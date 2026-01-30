@@ -40,13 +40,15 @@
     "@testing-library/react": "^16.1.0",
     "@types/bun": "latest",
     "@types/jsdom": "^27.0.0",
-    "jsdom": "^25.0.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "jsdom": "^25.0.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": { "optional": false },
+    "react-dom": { "optional": false }
   },
   "dependencies": {
     "derive-valtio": "^0.2.0",

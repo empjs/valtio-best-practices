@@ -9,10 +9,26 @@ import type {Snapshot} from 'valtio'
 import {proxy, ref, snapshot, subscribe, useSnapshot} from 'valtio'
 import {devtools, proxyMap, proxySet, subscribeKey} from 'valtio/utils'
 import {proxyWithHistory} from 'valtio-history'
+import type {History} from 'valtio-history'
 
 // ============================================
 // 类型定义
 // ============================================
+
+/** useWithHistory 返回的 snapshot 类型：value 为只读状态，history 含 index/nodes */
+export interface WithHistorySnapshot<T extends Record<string, unknown>> {
+  value: Snapshot<ValtioStore & T>
+  history: History<ValtioStore & T>
+  readonly isUndoEnabled: boolean
+  readonly isRedoEnabled: boolean
+  undo: () => void
+  redo: () => void
+}
+
+/** createWithHistory / useWithHistory 返回的 store 类型（value 可写，含 undo/redo） */
+export type StoreWithHistory<T extends Record<string, unknown>> = ReturnType<
+  typeof proxyWithHistory<ValtioStore & T>
+>
 
 /** 创建 Store 时的可选配置（如是否开启 devtools、显示名称） */
 export interface CreateOptions {
@@ -159,10 +175,10 @@ class ValtioStore {
   static createWithHistory<T extends Record<string, unknown> = Record<string, unknown>>(
     initialState: T = {} as T,
     options: Parameters<typeof proxyWithHistory>[1] = {},
-  ) {
+  ): StoreWithHistory<T> {
     const instance = new (ValtioStore as typeof ValtioStore)()
     Object.assign(instance, initialState)
-    return proxyWithHistory(instance, options)
+    return proxyWithHistory(instance, options) as unknown as StoreWithHistory<T>
   }
 
   /**
@@ -171,7 +187,7 @@ class ValtioStore {
   static useWithHistory<T extends Record<string, unknown> = Record<string, unknown>>(
     initialState?: InitialStateOrFn<T>,
     options: Parameters<typeof proxyWithHistory>[1] = {},
-  ) {
+  ): [WithHistorySnapshot<T>, StoreWithHistory<T>] {
     const store = useMemo(() => {
       const instance = new (ValtioStore as typeof ValtioStore)()
       const initial =
@@ -179,10 +195,10 @@ class ValtioStore {
           ? (initialState as () => T)()
           : (initialState ?? (instance.getInitialState() as T))
       Object.assign(instance, initial)
-      return proxyWithHistory(instance, options)
+      return proxyWithHistory(instance, options) as unknown as StoreWithHistory<T>
     }, [])
 
-    const snap = useSnapshot(store)
+    const snap = useSnapshot(store) as unknown as WithHistorySnapshot<T>
     return [snap, store]
   }
 

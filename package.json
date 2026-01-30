@@ -9,7 +9,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "lint": "biome check --write"
+    "lint": "biome check --write",
+    "dev": "pnpm --filter host dev",
+    "build": "pnpm --filter @empjs/valtio-store build && pnpm --filter host build"
   },
   "engines": {
     "node": ">=18.0.0",
