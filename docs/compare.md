@@ -36,7 +36,7 @@
 ```javascript
 // 需要 3 步
 class CounterStore extends ValtioStore { ... }
-export const counterStore = CounterStore.create();
+export const counterStore = CounterStore.createGlobal();
 
 import { counterStore } from './stores';
 import { useSnapshot } from 'valtio';
@@ -51,7 +51,7 @@ function Counter() {
 ```javascript
 // 依然需要 3 步，且必须手动创建实例
 class CounterStore extends ValtioStore { ... }
-export const counterStore = CounterStore.create();
+export const counterStore = CounterStore.createGlobal();
 
 import { counterStore } from './stores';
 import { useSnapshot } from 'valtio';
@@ -85,7 +85,7 @@ function Counter() {
 #### 原版/v2（意外共享）
 ```javascript
 // ❌ 两个组件意外共享状态
-const store = CounterStore.create();
+const store = CounterStore.createGlobal();
 
 <div>
   <Counter /> {/* count: 5 */}
@@ -183,7 +183,7 @@ function Cart2() {
 
 // ✅ v3 方案
 function ShoppingCart() {
-  const [baseSnap, baseStore, derivedSnap] = CartStore.useLocalWithDerived(
+  const [baseSnap, baseStore, derivedSnap] = CartStore.useWithDerived(
     { items: [] },
     (get) => ({ total: get.items.reduce((sum, i) => sum + i.price, 0) })
   );
@@ -256,8 +256,8 @@ function Counter() {
 |-----|------------|------------|
 | 局部状态 | 5% (手动创建) | **80%** (useLocal) |
 | 全局状态 | 95% (create) | 15% (useGlobal) |
-| 历史记录 | 1% | 3% (useLocalWithHistory) |
-| 派生状态 | 3% | 2% (useLocalWithDerived) |
+| 历史记录 | 1% | 3% (useWithHistory) |
+| 派生状态 | 3% | 2% (useWithDerived) |
 
 **结论：**
 - v2 强制使用全局（不符合实际需求）

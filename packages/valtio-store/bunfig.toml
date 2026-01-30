@@ -1,0 +1,12 @@
+# Bun 测试与覆盖率配置
+[test]
+# 预加载 DOM 环境，供 React Hooks / @testing-library 使用
+preload = ["./test-setup.ts"]
+# 覆盖率：排除测试文件，只统计 src 源码
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = ["**/*.test.ts", "**/test-setup.ts", "node_modules/**"]
+# 可选：覆盖率阈值（按需开启）
+# coverageThreshold = 0.8
+# 输出目录与报告
+coverageDir = "coverage"
+coverageReporter = ["text", "lcov"]

@@ -30,11 +30,19 @@
   "author": "Ken",
   "scripts": {
     "build": "rslib build",
-    "dev": "rslib build --watch"
+    "dev": "rslib build --watch",
+    "test": "bun test",
+    "tc": "bun test --coverage"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^19.0.0",
     "@rslib/core": "^0.19.3",
-    "rsbuild-plugin-dts": "^0.19.3"
+    "@testing-library/react": "^16.1.0",
+    "@types/bun": "latest",
+    "@types/jsdom": "^27.0.0",
+    "jsdom": "^25.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

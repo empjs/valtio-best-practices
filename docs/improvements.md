@@ -24,7 +24,7 @@ function Counter() {
 #### 2. 状态共享难以规避
 ```javascript
 // ❌ v2：两个相同组件意外共享状态
-const counterStore = CounterStore.create();
+const counterStore = CounterStore.createGlobal();
 
 function CounterA() {
   const snap = useSnapshot(counterStore);
@@ -107,7 +107,7 @@ class CounterStore extends ValtioStore {
 }
 
 // Step 2: 创建全局实例（手动）
-export const counterStore = CounterStore.create();
+export const counterStore = CounterStore.createGlobal();
 
 // Step 3: 在组件中导入
 import { counterStore } from './stores';
@@ -214,8 +214,7 @@ function UserSettings() {
 | 方法 | 用途 | 状态模式 |
 |------|------|---------|
 | `createGlobal()` | 创建全局单例 | 全局共享 |
-| `createLocal()` | 创建局部实例 | 手动管理 |
-| `create()` | 别名，等同 createGlobal | 全局共享 |
+| `create()` | 创建局部实例 | 手动管理 |
 
 ### React Hooks
 
@@ -223,9 +222,9 @@ function UserSettings() {
 |------|------|---------|
 | `useLocal()` | 局部状态（推荐） | 每组件独立 |
 | `useGlobal(store)` | 全局状态 | 所有组件共享 |
-| `useLocalWithHistory()` | 局部 + 历史记录 | 每组件独立 |
-| `useLocalWithDerived()` | 局部 + 派生状态 | 每组件独立 |
-| `useLocalAsync()` | 局部 + 异步管理 | 每组件独立 |
+| `useWithHistory()` | 局部 + 历史记录 | 每组件独立 |
+| `useWithDerived()` | 局部 + 派生状态 | 每组件独立 |
+| `useAsync()` | 局部 + 异步管理 | 每组件独立 |
 
 ---
 
@@ -420,7 +419,7 @@ function Counter() {
 
 ```javascript
 // v2
-export const userStore = UserStore.create();
+export const userStore = UserStore.createGlobal();
 
 function Profile() {
   const snap = useSnapshot(userStore);
@@ -449,7 +448,7 @@ function Profile() {
 
 ```javascript
 // v2（错误：意外共享状态）
-const counterStore = CounterStore.create();
+const counterStore = CounterStore.createGlobal();
 
 function Counter() {
   const snap = useSnapshot(counterStore);
@@ -494,8 +493,8 @@ function Counter() {
 | 模态框、抽屉 | `useLocal()` |
 | 全局用户状态 | `useGlobal()` |
 | 应用配置、主题 | `useGlobal()` |
-| 带撤销的表单 | `useLocalWithHistory()` |
-| 购物车（带总价） | `useLocalWithDerived()` |
-| API 数据加载 | `useLocalAsync()` |
+| 带撤销的表单 | `useWithHistory()` |
+| 购物车（带总价） | `useWithDerived()` |
+| API 数据加载 | `useAsync()` |
 
 v3 完美解决了 v2 的两大痛点，是生产环境的最佳选择！

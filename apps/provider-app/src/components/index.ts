@@ -1,5 +1,0 @@
-export { LocalCounter } from './LocalCounter'
-export { GlobalCounter } from './GlobalCounter'
-export { FormWithHistory } from './FormWithHistory'
-export { ShoppingCart } from './ShoppingCart'
-export { UserProfile } from './UserProfile'
