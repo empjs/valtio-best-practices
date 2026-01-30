@@ -5,7 +5,7 @@ export default defineConfig(store => {
   return {
     plugins: [pluginReact(), pluginTailwindcss()],
     server: {
-      port: 1112,
+      port: 1111,
       open: false,
     },
     cache: false,
