@@ -1,0 +1,32 @@
+{
+  "name": "emp-workspace",
+  "version": "1.0.0",
+  "description": "emp workspace",
+  "main": "index.js",
+  "type": "module",
+  "repository": "https://github.com/empjs/valtio-best-practices.git",
+  "author": "ken <ckken@qq.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "biome check --write"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8"
+  },
+  "devDependencies": {
+    "@empjs/biome-config": "2.3.0",
+    "@empjs/cli": "3.12.2",
+    "@empjs/plugin-react": "3.12.1",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "tsup": "8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@empjs/share": "3.13.7",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "@empjs/valtio-store",
+  "version": "1.0.0",
+  "description": "valtio store",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "maintainers": [
+    "ckken"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "valtio",
+    "store"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "Ken",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "derive-valtio": "^0.2.0",
+    "valtio": "^2.3.0",
+    "valtio-history": "^1.0.1"
+  }
+}

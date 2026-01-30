@@ -1,0 +1,18 @@
+{
+  "name": "mf-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "emp dev",
+    "build": "emp build",
+    "start": "emp serve",
+    "stat": "emp build --analyze",
+    "bd": "emp build --doctor",
+    "emp": "emp"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
