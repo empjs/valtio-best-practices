@@ -21,26 +21,30 @@ const App = () => {
     localStorage.setItem(THEME_KEY, theme)
   }, [theme])
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark)
+  }, [isDark])
+
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
   const themeValue = {isDark, onToggleTheme: toggleTheme}
 
   return (
     <ThemeContext.Provider value={themeValue}>
       <div
-        className={`min-h-screen transition-colors dark:text-slate-100 ${isDark ? 'dark' : ''} ${
+        className={`min-h-screen transition-colors duration-200 dark:text-slate-100 ${isDark ? 'dark' : ''} ${
           isDark
             ? 'bg-gradient-to-b from-slate-900 via-slate-900 to-slate-800'
-            : 'bg-gradient-to-b from-violet-50 via-[#FAF5FF] to-white'
+            : 'bg-gradient-to-b from-slate-50 to-white'
         }`}
       >
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:ring-2 focus:ring-violet-500 dark:focus:bg-slate-800 dark:focus:ring-violet-400"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:ring-2 focus:ring-slate-400 dark:focus:bg-slate-800 dark:focus:ring-slate-500"
         >
           跳到主内容
         </a>
         <Nav />
-        <main id="main" className="pt-24">
+        <main id="main">
           <Switch>
             <Route path="/" component={Home} />
             <Route path="/create-store" component={CreateStore} />
@@ -50,6 +54,9 @@ const App = () => {
             <Route path="/performance" component={Performance} />
           </Switch>
         </main>
+        <footer className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+          © 2026 EMP Team. MIT License.
+        </footer>
       </div>
     </ThemeContext.Provider>
   )

@@ -1,45 +1,109 @@
 @import "tailwindcss";
 
-/* ui-ux-pro-max：参考 UI UX Pro Max 官网 — 文档站 + minimal + professional */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-:root {
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  /* Minimal：Brand + white + accent. Primary #7C3AED, CTA #F97316, Background #FAF5FF, Text #4C1D95 */
-  --color-primary: #7c3aed;
-  --color-secondary: #a78bfa;
-  --color-cta: #f97316;
-  --color-bg: #faf5ff;
-  --color-text: #4c1d95;
-  line-height: 1.6;
+/* 与 App 根背景一致，避免 body/html 露出默认白色 */
+html,
+body {
+  min-height: 100%;
 }
 
-/* 正文行高 1.5–1.75（Swiss 可读性） */
+body {
+  background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+}
+
+html.dark body {
+  background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+}
+
+/* UI/UX Pro Max 默认风格：设计 token 与可读性 */
+:root {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.6;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-border: #e2e8f0;
+  /* 主色→强调色渐变（蓝橙过渡，参考 UI UX Pro Max） */
+  --color-primary: #1d4ed8;
+  --color-primary-mid: #2563eb;
+  --color-accent-mid: #f59e0b;
+  --color-accent: #ea580c;
+}
+html.dark {
+  --color-primary: #3b82f6;
+  --color-primary-mid: #60a5fa;
+  --color-accent-mid: #fbbf24;
+  --color-accent: #fb923c;
+}
+/* header 区域叠底渐变（蓝橙过渡，确保正常显示） */
+.header-overlay-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: -10;
+  background: linear-gradient(
+    to bottom right,
+    rgb(239 246 255 / 0.75),
+    rgb(255 255 255 / 0.5),
+    rgb(255 247 237 / 0.75)
+  );
+}
+html.dark .header-overlay-gradient {
+  background: linear-gradient(
+    to bottom right,
+    rgb(30 58 138 / 0.3),
+    rgb(15 23 42 / 0.5),
+    rgb(124 45 18 / 0.3)
+  );
+}
+
+/* 首页主标题蓝橙渐变字（平滑过渡） */
+.hero-gradient-text {
+  background: linear-gradient(
+    90deg,
+    var(--color-primary) 0%,
+    var(--color-primary-mid) 35%,
+    var(--color-accent-mid) 65%,
+    var(--color-accent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 article p,
 main p {
   line-height: 1.625;
 }
 
-/* 移动端正文至少 16px，避免 iOS 缩放 */
 @media (max-width: 767px) {
   html {
     font-size: 16px;
   }
 }
 
-/* 锚点滚动时留出固定导航高度，避免内容被遮挡 */
 [id] {
   scroll-margin-top: 5rem;
 }
 
-/* z-index 层级（参考 ui-ux-pro-max）：nav 10, 浮层 20, 弹窗 30, 顶层 50 */
-
-/* Tailwind 主题切换：在根节点加 .dark 时应用 dark: 样式，由 Nav 的切换按钮 + localStorage 持久化 */
 @custom-variant dark (&&:where(.dark, .dark *));
 
-/* 尊重用户减少动效偏好 */
+/* header 背景浮动光晕（参考 UI UX Pro Max） */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+/* 无障碍：尊重用户「减少动效」设置，必须覆盖组件内 transition（故使用 !important） */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

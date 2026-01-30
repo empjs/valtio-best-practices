@@ -12,8 +12,8 @@ const GITHUB_URL = 'https://github.com/empjs/valtio-best-practices'
 
 const links = [
   {href: '/', label: '首页'},
-  {href: '/create-store', label: '创建 Store'},
-  {href: '/use-store', label: '使用 Store'},
+  {href: '/create-store', label: '创建'},
+  {href: '/use-store', label: '使用'},
   {href: '/collections', label: '集合'},
   {href: '/subscribe', label: '订阅'},
   {href: '/performance', label: '性能'},
@@ -71,7 +71,7 @@ function GitHubIcon() {
 }
 
 const iconBtnClass =
-  'inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-lg text-slate-600 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF5FF] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:focus-visible:ring-offset-slate-900'
+  'inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-lg text-slate-600 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:focus-visible:ring-slate-500 dark:focus-visible:ring-offset-slate-900'
 
 export function Nav() {
   const [location] = useLocation()
@@ -79,16 +79,16 @@ export function Nav() {
 
   return (
     <nav
-      className="sticky top-0 z-10 mx-4 mt-4 rounded-xl border border-gray-200/80 bg-white/95 shadow-sm backdrop-blur-sm dark:border-slate-600 dark:bg-slate-900/95"
+      className="sticky top-0 z-10 mx-4 mt-4 rounded-xl border border-white/30 bg-white/45 shadow-lg shadow-slate-200/30 backdrop-blur-xl dark:border-white/15 dark:bg-slate-900/45 dark:shadow-slate-900/50"
       aria-label="主导航"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 sm:px-4 sm:py-2.5">
+      <div className="flex flex-wrap items-center justify-between top-4 gap-2 px-3 py-2 sm:px-4 sm:py-2.5">
         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
           <Link
             href="/"
-            className="cursor-pointer rounded-lg px-2 py-2 text-sm font-semibold text-[#4C1D95] transition-colors duration-200 hover:text-violet-700 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF5FF] dark:text-violet-200 dark:hover:text-violet-100 dark:focus-visible:ring-offset-slate-900"
+            className="cursor-pointer rounded-lg px-2 py-2 text-sm font-semibold text-slate-800 transition-colors duration-200 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-100 dark:hover:text-slate-200 dark:focus-visible:ring-slate-500 dark:focus-visible:ring-offset-slate-900"
           >
-            Valtio Enhanced
+            @empjs/valtio
           </Link>
           <span className="hidden text-gray-300 dark:text-slate-600 sm:inline" aria-hidden>
             |
@@ -99,9 +99,9 @@ export function Nav() {
               <Link
                 key={href}
                 href={href}
-                className={`inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF5FF] dark:focus-visible:ring-offset-slate-900 ${
+                className={`inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-slate-500 dark:focus-visible:ring-offset-slate-900 ${
                   isActive
-                    ? 'bg-violet-100 text-violet-800 dark:bg-violet-900/50 dark:text-violet-200'
+                    ? 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100'
                 }`}
               >
