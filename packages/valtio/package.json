@@ -1,6 +1,6 @@
 {
   "name": "@empjs/valtio",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "valtio store",
   "license": "MIT",
   "type": "module",
