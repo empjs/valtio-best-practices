@@ -7,7 +7,7 @@ interface GlobalCounterProps {
 }
 
 export function GlobalCounter({ title }: GlobalCounterProps) {
-  const [snap, store] = CounterStore.useGlobal(globalCounterStore)
+  const [snap, store] = CounterStore.use(globalCounterStore)
 
   return (
     <div style={{ padding: '15px', border: '2px solid #2196F3', margin: '10px' }}>

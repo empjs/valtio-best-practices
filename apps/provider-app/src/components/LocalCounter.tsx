@@ -6,7 +6,7 @@ interface LocalCounterProps {
 }
 
 export function LocalCounter({ title }: LocalCounterProps) {
-  const [snap, store] = CounterStore.useLocal()
+  const [snap, store] = CounterStore.use()
 
   return (
     <div style={{ padding: '15px', border: '2px solid #4CAF50', margin: '10px' }}>

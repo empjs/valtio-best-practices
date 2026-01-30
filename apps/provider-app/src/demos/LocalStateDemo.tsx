@@ -18,7 +18,7 @@ export function LocalStateDemo() {
         <strong>代码：</strong>
         <pre style={{ fontSize: '12px' }}>
           {`function LocalCounterComponent() {
-  const [snap, store] = CounterStore.useLocal();
+  const [snap, store] = CounterStore.use();
   return <div onClick={() => store.increment()}>{snap.count}</div>;
 }`}
         </pre>

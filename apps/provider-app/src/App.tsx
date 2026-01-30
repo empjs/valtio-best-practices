@@ -22,10 +22,7 @@ export default function App() {
         <h2>🎯 核心 API</h2>
         <ul>
           <li>
-            <strong>useLocal()</strong> - 每个组件独立 store，状态完全隔离
-          </li>
-          <li>
-            <strong>useGlobal()</strong> - 所有组件共享 store，状态同步
+            <strong>use()</strong> - 统一入口：无参/传初始状态为局部，传 store 为全局
           </li>
           <li>
             <strong>useLocalWithHistory()</strong> - 局部 + 撤销/重做

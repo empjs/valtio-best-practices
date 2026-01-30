@@ -20,7 +20,7 @@ export function GlobalStateDemo() {
           {`const globalStore = CounterStore.createGlobal({ count: 0 });
 
 function Component() {
-  const [snap, store] = CounterStore.useGlobal(globalStore);
+  const [snap, store] = CounterStore.use(globalStore);
   return <div onClick={() => store.increment()}>{snap.count}</div>;
 }`}
         </pre>

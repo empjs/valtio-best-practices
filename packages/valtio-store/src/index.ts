@@ -1,3 +1,8 @@
+/**
+ * @empjs/valtio-store - 基于 Valtio 的 Store 封装
+ *
+ * 提供：统一 use() 入口、局部/全局模式、子类实例方法、getSnapshot/toJSON 闭包防抖等
+ */
 import {derive} from 'derive-valtio'
 import {useMemo} from 'react'
 import type {Snapshot} from 'valtio'
@@ -9,24 +14,26 @@ import {proxyWithHistory} from 'valtio-history'
 // 类型定义
 // ============================================
 
+/** 创建 Store 时的可选配置（如是否开启 devtools、显示名称） */
 export interface CreateOptions {
   devtools?: boolean
   name?: string
 }
 
+/** 初始状态：可以是普通对象，或返回对象的函数（惰性初始化） */
 export type InitialStateOrFn<T = Record<string, unknown>> = T | (() => T)
 
-/** 派生函数：接收 get(proxy) 返回派生状态 */
+/** 派生函数：接收 get(proxy) 得到快照，返回派生出的新状态（如 total、count） */
 export type DeriveFn<TProxy, TDerived> = (get: (proxy: TProxy) => Snapshot<TProxy>) => TDerived
 
-/** 带 _loading/_error 的异步 Store 状态 */
+/** 异步 Store 的扩展状态：_loading[key]、_error[key] 用于表示某次 async 的加载中/错误 */
 export interface AsyncStoreState<T = Record<string, unknown>> {
   _loading?: Record<string, boolean>
   _error?: Record<string, unknown>
   [key: string]: unknown
 }
 
-/** 带 async 方法的 Store 类型 */
+/** 带 async(key, fn) 方法的 Store：用于包装异步方法并自动维护 _loading/_error */
 export interface AsyncStoreWithMethods<T = Record<string, unknown>> extends ValtioStore, AsyncStoreState<T> {
   async<K extends string>(
     key: K,
@@ -34,17 +41,48 @@ export interface AsyncStoreWithMethods<T = Record<string, unknown>> extends Valt
   ): (...args: unknown[]) => Promise<unknown>
 }
 
-/** 取消订阅函数 */
+/** 取消订阅：subscribe / subscribeKey 等返回的函数，调用即取消监听 */
 export type Unsubscribe = () => void
 
 /**
- * ValtioStore v3 - 终极优化版本
+ * 用闭包固定 proxy 引用，重写 getSnapshot / toJSON。
+ * 当 JSON.stringify(store) 或 devtools 等无 receiver 调用 toJSON/getSnapshot 时，
+ * 不会丢失 this，始终对同一个 proxy 调用 snapshot(proxy)，避免 "Please use proxy object"。
+ */
+function bindProxyMethods<T extends ValtioStore>(proxied: T): T {
+  const p = proxied
+  proxied.getSnapshot = function getSnapshot() {
+    return snapshot(p) as Snapshot<T>
+  }
+  proxied.toJSON = function toJSON(): Record<string, unknown> {
+    const snap = snapshot(p) as Record<string, unknown>
+    const result: Record<string, unknown> = {}
+    for (const key in snap) {
+      const value = snap[key]
+      if (typeof value !== 'function' && typeof value !== 'symbol') result[key] = value
+    }
+    return result
+  }
+  proxied.clone = proxied.clone.bind(proxied)
+  proxied.subscribe = proxied.subscribe.bind(proxied)
+  proxied.subscribeKey = proxied.subscribeKey.bind(proxied)
+  proxied.subscribeKeys = proxied.subscribeKeys.bind(proxied)
+  proxied.update = proxied.update.bind(proxied)
+  proxied.set = proxied.set.bind(proxied)
+  proxied.reset = proxied.reset.bind(proxied)
+  proxied.persist = proxied.persist.bind(proxied)
+  return proxied
+}
+
+/**
+ * ValtioStore 基类（v3）
  *
- * 解决的核心问题：
- * 1. ✅ 引用方式简化 - 提供 use() Hook，自动管理实例
- * 2. ✅ 状态隔离 - 每个组件独立实例，避免状态共享
- * 3. ✅ 支持全局/局部模式 - 灵活切换
- * 4. ✅ 保留 v2 所有优化特性
+ * 子类定义 state + getInitialState() + 业务方法（如 increment），通过静态方法创建/使用：
+ * - createGlobal(initialState) → 全局单例，多组件共享
+ * - createLocal(initialState) → 每次调用返回新实例
+ * - use() / use(initialState) / use(globalStore) → React 统一入口，局部或全局
+ *
+ * 所有静态工厂均用 `this` 创建实例，保证 CounterStore.createGlobal() 得到 CounterStore 实例。
  */
 class ValtioStore {
   [key: string]: unknown
@@ -54,50 +92,56 @@ class ValtioStore {
   // ============================================
 
   /**
-   * 创建全局单例 Store（所有组件共享）
+   * 创建全局单例 Store，所有组件共享同一份状态。
+   * 先 bindProxyMethods 再 devtools，避免 devtools 序列化时触发 "Please use proxy object"。
    */
   static createGlobal<T extends Record<string, unknown> = Record<string, unknown>>(
     initialState: T = {} as T,
-    options: CreateOptions = {},
+    options: CreateOptions = {
+      devtools: true,
+    },
   ): ValtioStore & T {
-    const instance = new ValtioStore()
+    const instance = new (this as typeof ValtioStore)()
     Object.assign(instance, initialState)
     const proxied = proxy(instance) as ValtioStore & T
+    const bound = bindProxyMethods(proxied)
 
     if (process.env.NODE_ENV === 'development' && options.devtools !== false) {
-      devtools(proxied, {name: options.name ?? ValtioStore.name + ' (Global)'})
+      devtools(bound, {name: options.name ?? ValtioStore.name + ' (Global)'})
     }
 
-    return proxied
+    return bound
   }
 
   /**
-   * 创建局部实例（每次调用返回新实例）
+   * 创建局部实例，每次调用都返回新的 proxy，适合单次使用或 createWithDerived 等内部用。
    */
   static createLocal<T extends Record<string, unknown> = Record<string, unknown>>(
     initialState: T = {} as T,
     _options: CreateOptions = {},
   ): ValtioStore & T {
-    const instance = new ValtioStore()
+    const instance = new (this as typeof ValtioStore)()
     Object.assign(instance, initialState)
-    return proxy(instance) as ValtioStore & T
+    return bindProxyMethods(proxy(instance) as ValtioStore & T)
   }
 
   /**
-   * React Hook - 自动管理局部实例（推荐）
-   * 每个组件有独立的 store 实例
+   * React Hook - 统一入口。
+   * - use()、use(initialState)、use(() => state) → 局部 store，每组件独立，内部用 new this() 创建子类实例。
+   * - use(globalStore) → 直接使用传入的 store（全局），通过 getSnapshot 存在判断是否为 store。
    */
-  static useLocal<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialState?: InitialStateOrFn<T>,
+  static use<T extends Record<string, unknown> = Record<string, unknown>>(
+    initialStateOrStore?: InitialStateOrFn<T> | (ValtioStore & Record<string, unknown>),
   ): [Snapshot<ValtioStore & T>, ValtioStore & T] {
     const store = useMemo(() => {
-      const instance = new ValtioStore()
-      const initial =
-        typeof initialState === 'function'
-          ? (initialState as () => T)()
-          : (initialState ?? (instance.getInitialState() as T))
+      const arg = initialStateOrStore
+      const isStore =
+        arg && typeof arg === 'object' && typeof (arg as {getSnapshot?: unknown}).getSnapshot === 'function'
+      if (isStore) return arg as ValtioStore & T
+      const instance = new (this as typeof ValtioStore)()
+      const initial = typeof arg === 'function' ? (arg as () => T)() : (arg ?? (instance.getInitialState() as T))
       Object.assign(instance, initial)
-      return proxy(instance) as ValtioStore & T
+      return bindProxyMethods(proxy(instance) as ValtioStore & T)
     }, [])
 
     const snap = useSnapshot(store)
@@ -105,16 +149,7 @@ class ValtioStore {
   }
 
   /**
-   * React Hook - 使用全局单例
-   * 所有组件共享同一个 store
-   */
-  static useGlobal<T extends object>(globalStore: T): [Snapshot<T>, T] {
-    const snap = useSnapshot(globalStore) as Snapshot<T>
-    return [snap, globalStore]
-  }
-
-  /**
-   * 向后兼容的 create 方法（默认全局）
+   * 向后兼容：create(initialState) 等价于 createGlobal(initialState)。
    */
   static create<T extends Record<string, unknown> = Record<string, unknown>>(
     initialState: T = {} as T,
@@ -128,26 +163,26 @@ class ValtioStore {
   // ============================================
 
   /**
-   * 创建带历史记录的 store
+   * 创建带撤销/重做历史的 store（valtio-history），返回 { value, history, undo, redo } 形态。
    */
   static createWithHistory<T extends Record<string, unknown> = Record<string, unknown>>(
     initialState: T = {} as T,
     options: Parameters<typeof proxyWithHistory>[1] = {},
   ) {
-    const instance = new ValtioStore()
+    const instance = new (this as typeof ValtioStore)()
     Object.assign(instance, initialState)
     return proxyWithHistory(instance, options)
   }
 
   /**
-   * React Hook - 带历史记录（局部）
+   * React Hook - 局部 store + 历史记录，返回 [snap, store]，snap 含 value / history，store 含 value、undo、redo。
    */
   static useLocalWithHistory<T extends Record<string, unknown> = Record<string, unknown>>(
     initialState?: InitialStateOrFn<T>,
     options: Parameters<typeof proxyWithHistory>[1] = {},
   ) {
     const store = useMemo(() => {
-      const instance = new ValtioStore()
+      const instance = new (this as typeof ValtioStore)()
       const initial =
         typeof initialState === 'function'
           ? (initialState as () => T)()
@@ -161,13 +196,14 @@ class ValtioStore {
   }
 
   /**
-   * 创建带派生状态的 store
+   * 创建带派生状态的 store：base 为可写状态，derived 由 deriveFn(get) 计算，只读。
+   * 返回 { base, derived }，通常配合 useSnapshot(base) / useSnapshot(derived) 使用。
    */
   static createWithDerived<TBase extends Record<string, unknown>, TDerived>(
     initialState: TBase,
     deriveFn: DeriveFn<ValtioStore & TBase, TDerived>,
   ) {
-    const baseStore = ValtioStore.createLocal(initialState)
+    const baseStore = (this as typeof ValtioStore).createLocal(initialState)
     const derivedState = derive(deriveFn, {proxy: baseStore})
 
     return {
@@ -177,20 +213,20 @@ class ValtioStore {
   }
 
   /**
-   * React Hook - 带派生状态（局部）
+   * React Hook - 局部 store + 派生状态，返回 [baseSnap, baseStore, derivedSnap]，derived 由 deriveFn 根据 base 计算。
    */
   static useLocalWithDerived<TBase extends Record<string, unknown>, TDerived>(
     initialState: InitialStateOrFn<TBase> | undefined,
     deriveFn: DeriveFn<ValtioStore & TBase, TDerived>,
   ) {
     const config = useMemo(() => {
-      const instance = new ValtioStore()
+      const instance = new (this as typeof ValtioStore)()
       const initial =
         typeof initialState === 'function'
           ? (initialState as () => TBase)()
           : (initialState ?? (instance.getInitialState() as TBase))
       Object.assign(instance, initial)
-      const baseStore = proxy(instance) as ValtioStore & TBase
+      const baseStore = bindProxyMethods(proxy(instance) as ValtioStore & TBase)
       const derivedState = derive(deriveFn, {proxy: baseStore})
 
       return {base: baseStore, derived: derivedState}
@@ -341,7 +377,9 @@ class ValtioStore {
       _error: {},
     }
 
-    const instance = ValtioStore.createLocal(enhanced as Record<string, unknown>) as AsyncStoreWithMethods<T>
+    const instance = (this as typeof ValtioStore).createLocal(
+      enhanced as Record<string, unknown>,
+    ) as AsyncStoreWithMethods<T>
 
     instance.async = function (key: string, asyncFn: (...args: unknown[]) => Promise<unknown>) {
       return async (...args: unknown[]) => {
@@ -377,7 +415,7 @@ class ValtioStore {
         _error: {},
       }
 
-      const instance = new ValtioStore()
+      const instance = new (this as typeof ValtioStore)()
       Object.assign(instance, enhanced)
       const proxied = proxy(instance) as AsyncStoreWithMethods<T>
 
@@ -400,7 +438,7 @@ class ValtioStore {
         }
       }
 
-      return proxied
+      return bindProxyMethods(proxied)
     }, [])
 
     const snap = useSnapshot(store)
