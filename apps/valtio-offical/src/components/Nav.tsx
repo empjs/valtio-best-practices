@@ -2,11 +2,11 @@ import {Link, useLocation} from 'wouter'
 
 const links = [
   { href: '/', label: '首页' },
-  { href: '/create-store', label: 'createStore' },
-  { href: '/use-store', label: 'useStore' },
-  { href: '/collections', label: 'collections' },
-  { href: '/subscribe', label: 'subscribe' },
-  { href: '/performance', label: 'performance' },
+  { href: '/create-store', label: '创建 Store' },
+  { href: '/use-store', label: '使用 Store' },
+  { href: '/collections', label: '集合' },
+  { href: '/subscribe', label: '订阅' },
+  { href: '/performance', label: '性能' },
 ] as const
 
 export function Nav() {

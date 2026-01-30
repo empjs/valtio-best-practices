@@ -132,7 +132,7 @@ function AsyncDemoBlock() {
     user: null as {name: string} | null,
     loading: false,
     error: null as Error | null,
-    async loadUser() {
+    loadUser() {
       this.loading = true
       this.error = null
       setTimeout(() => {
@@ -152,7 +152,7 @@ function AsyncDemoBlock() {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-700/50">
       <p className="mb-2 text-slate-900 dark:text-slate-100">{snap.user ? `user: ${snap.user.name}` : '未加载'}</p>
-      <button type="button" onClick={store.loadUser} className={btn}>
+      <button type="button" onClick={() => store.loadUser()} className={btn}>
         {snap.user ? '重新加载' : '加载用户'}
       </button>
     </div>
