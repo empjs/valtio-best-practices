@@ -93,7 +93,7 @@ const codeWhen = `// subscribeKey / subscribeKeys：非 React 逻辑（持久化
 `
 
 const cardChip =
-  'rounded border border-violet-200/50 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-700/50'
+  'rounded border border-gray-200 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-700/50'
 
 /** 只读 count，用于演示细粒度：改 name 时此组件不重渲染 */
 function OnlyCount({store}: { store: ReturnType<typeof useStore>[1] }) {
@@ -141,11 +141,11 @@ export function Subscribe() {
   }, [store])
 
   const btn =
-    'cursor-pointer rounded border border-violet-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 hover:border-violet-400 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+    'cursor-pointer rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-400 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
 
   const demo = (
     <section
-      className="rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+      className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       aria-live="polite"
     >
       <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果</h3>
@@ -182,39 +182,39 @@ export function Subscribe() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">
         subscribe
       </h1>
-      <p className="mb-6 text-slate-600 dark:text-slate-400">
+      <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         subscribeKey / subscribeKeys、batch、以及 useSnapshot 的细粒度订阅（只读用到的字段）。
       </p>
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         1. 如何导入
       </h2>
       <CodeBlock code={codeImport} title="导入与概念" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         2. subscribeKey：单 key 订阅
       </h2>
       <CodeBlock code={codeSubscribeKey} title="subscribeKey" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         3. subscribeKeys：多 key 订阅
       </h2>
       <CodeBlock code={codeSubscribeKeys} title="subscribeKeys" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         4. batch：批量更新
       </h2>
       <CodeBlock code={codeBatch} title="batch" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         5. 细粒度订阅（只读用到的字段）
       </h2>
       <CodeBlock code={codeFineGrained} title="useSnapshot 按路径订阅" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         6. 何时用
       </h2>
       <CodeBlock code={codeWhen} title="选用场景" />

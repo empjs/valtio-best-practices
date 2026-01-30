@@ -69,10 +69,10 @@ const asyncStore = createStore(
 )
 
 const btn =
-  'cursor-pointer rounded border border-violet-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 hover:border-violet-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+  'cursor-pointer rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
 
 const cardInner =
-  'rounded-lg border border-violet-200/50 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
+  'rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
 
 /** 单个展示块：读同一全局 store，任意一处 +1 会同步到所有实例 */
 function GlobalCounterBlock({label}: {label: string}) {
@@ -84,7 +84,7 @@ function GlobalCounterBlock({label}: {label: string}) {
       <button
         type="button"
         onClick={() => demoStore.set('count', snap.count + 1)}
-        className="cursor-pointer rounded border border-violet-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
+        className="cursor-pointer rounded border border-gray-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
       >
         +1
       </button>
@@ -93,10 +93,11 @@ function GlobalCounterBlock({label}: {label: string}) {
 }
 
 /** 带历史的 createStore demo：读 snap.value，写 store.value，undo/redo */
-function HistoryDemoBlock() {
+function HistoryDemoBlock({label}: {label?: string}) {
   const snap = historyStore.useSnapshot()
   return (
     <div className={cardInner}>
+      {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
       <p className="mb-2 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.value.count}</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => (historyStore.value.count = snap.value.count + 1)} className={btn}>
@@ -126,11 +127,12 @@ function HistoryDemoBlock() {
 }
 
 /** 带派生的 createStore demo：base + derived（与普通用法一致：store.useSnapshot()） */
-function DerivedDemoBlock() {
+function DerivedDemoBlock({label}: {label?: string}) {
   const baseSnap = derivedStore.base.useSnapshot()
   const derivedSnap = derivedStore.derived.useSnapshot()
   return (
     <div className={cardInner}>
+      {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
       <p className="mb-1 tabular-nums text-slate-900 dark:text-slate-100">
         base: a={baseSnap.a}, b={baseSnap.b}
       </p>
@@ -197,7 +199,7 @@ const store = createStore({
 export function CreateStore() {
   const demo = (
     <section
-      className="space-y-6 rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+      className="space-y-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       aria-live="polite"
     >
       <div>
@@ -219,11 +221,31 @@ export function CreateStore() {
       </div>
       <div>
         <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">2. 带历史的 createStore</h3>
-        <HistoryDemoBlock />
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          同一全局 store，两处组件订阅同一 count，任意一处操作会同步到另一实例。
+        </p>
+        <div className="flex gap-3">
+          <div className="min-w-0 flex-1">
+            <HistoryDemoBlock label="实例 A" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <HistoryDemoBlock label="实例 B" />
+          </div>
+        </div>
       </div>
       <div>
         <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">3. 带派生的 createStore</h3>
-        <DerivedDemoBlock />
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          同一全局 store（base + derived），两处组件订阅，任意一处修改 a 会同步派生 sum。
+        </p>
+        <div className="flex gap-3">
+          <div className="min-w-0 flex-1">
+            <DerivedDemoBlock label="实例 A" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <DerivedDemoBlock label="实例 B" />
+          </div>
+        </div>
       </div>
       <div>
         <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">4. 异步请求（全局 store）</h3>
@@ -234,32 +256,32 @@ export function CreateStore() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">createStore</h1>
-      <p className="mb-6 text-slate-600 dark:text-slate-400">
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">createStore</h1>
+      <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         创建全局 store，单例跨组件共享。支持常规、带历史、带派生；异步请求用常规 store + 手动 loading/error。
       </p>
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">如何导入</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">如何导入</h2>
       <CodeBlock code={codeImport} title="导入" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">签名</h2>
-      <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">签名</h2>
+      <p className="mb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
         createStore(initialState, options?) → store 或 &#123; base, derived &#125;（options 含 history 或 derive 时）
       </p>
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">1. 定义 store（常规）</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">1. 定义 store（常规）</h2>
       <CodeBlock code={codeDefine} title="定义 store" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">2. 在组件中读取与更新</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">2. 在组件中读取与更新</h2>
       <CodeBlock code={codeReadWrite} title="读取 / 更新" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">3. 带历史的 createStore</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">3. 带历史的 createStore</h2>
       <CodeBlock code={codeHistory} title="options.history" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">4. 带派生的 createStore</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">4. 带派生的 createStore</h2>
       <CodeBlock code={codeDerived} title="options.derive" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         5. 异步请求（常规 store + 手动 loading/error）
       </h2>
       <CodeBlock code={codeAsync} title="异步请求" />

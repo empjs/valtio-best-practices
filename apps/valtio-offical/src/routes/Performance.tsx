@@ -111,11 +111,11 @@ export function Performance() {
   const allDone = snap.items.length > 0 && snap.items.every(item => item.done)
 
   const btn =
-    'cursor-pointer rounded border border-violet-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 hover:border-violet-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+    'cursor-pointer rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
 
   const demo = (
     <section
-      className="rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+      className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       aria-live="polite"
     >
       <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果：长列表</h3>
@@ -134,7 +134,7 @@ export function Performance() {
         </button>
       </div>
       <div
-        className="max-h-80 overflow-auto rounded border border-violet-200/50 dark:border-slate-600"
+        className="max-h-80 overflow-auto rounded border border-gray-200 dark:border-slate-600"
         style={{ contain: 'layout style' }}
       >
         {snap.items.map(item => (
@@ -160,19 +160,19 @@ export function Performance() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">
         performance
       </h1>
-      <p className="mb-6 text-slate-600 dark:text-slate-400">
+      <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         长列表场景：用 batch 做批量增删改、content-visibility 优化渲染；大量数据可配合虚拟列表（如 virtua）。
       </p>
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         1. 长列表 + batch 批量操作
       </h2>
       <CodeBlock code={codeLongList} title="批量添加 / 删除 / 全选" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         2. 长列表渲染
       </h2>
       <CodeBlock code={codeRender} title="content-visibility 与虚拟列表" />

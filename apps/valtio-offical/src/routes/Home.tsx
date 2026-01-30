@@ -59,32 +59,41 @@ export function Home() {
   const activeCmd = installCommands.find((c) => c.label === installTab)!
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-6 sm:py-8">
-      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">
-        Valtio Enhanced Store
-      </h1>
-      <p className="mb-2 text-lg font-medium text-slate-700 dark:text-slate-200">
-        Valtio 的强大增强版 —— 更少样板代码，更高生产力
-      </p>
-      <p className="mb-8 max-w-3xl text-slate-600 dark:text-slate-400">
-        基于 Valtio 的细粒度响应式机制，提供开箱即用的高级功能：历史回溯、自动派生、持久化、嵌套更新、克隆、重置等，让状态管理体验更接近 Zustand / Pinia，但完全保留 Valtio 的轻量与快照优势。
-      </p>
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
+      {/* Hero：官网风格 — 渐变色 + 大字号、多留白、单一 CTA */}
+      <header className="mb-20 border-b border-gray-200/80 pb-14 dark:border-slate-700">
+        <h1 className="mb-4 bg-gradient-to-r from-[#4C1D95] via-violet-700 to-violet-600 bg-clip-text text-3xl font-semibold tracking-tight text-transparent dark:from-violet-200 dark:via-violet-100 dark:to-violet-300 sm:text-4xl">
+          Valtio Enhanced Store
+        </h1>
+        <p className="mb-4 text-lg font-medium text-slate-700 dark:text-slate-200">
+          Valtio 的强大增强版 —— 更少样板代码，更高生产力
+        </p>
+        <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
+          基于 Valtio 的细粒度响应式机制，提供开箱即用的高级功能：历史回溯、自动派生、持久化、嵌套更新、克隆、重置等，让状态管理体验更接近 Zustand / Pinia，但完全保留 Valtio 的轻量与快照优势。
+        </p>
+        <a
+          href="#quick-start-heading"
+          className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-lg bg-[#F97316] px-5 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-orange-600 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF5FF] dark:focus-visible:ring-offset-slate-900"
+        >
+          快速上手
+        </a>
+      </header>
 
-      <section className="mb-10" aria-labelledby="quick-start-heading">
-        <h2 id="quick-start-heading" className="mb-3 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <section className="mb-12 sm:mb-16" aria-labelledby="quick-start-heading">
+        <h2 id="quick-start-heading" className="mb-2 text-xl font-medium text-slate-800 dark:text-slate-200">
           快速上手
         </h2>
-        <h3 id="install-heading" className="mb-2 text-base font-medium text-slate-700 dark:text-slate-300">
+        <h3 id="install-heading" className="mb-1.5 text-base font-medium text-slate-700 dark:text-slate-300">
           安装
         </h3>
-        <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
+        <p className="mb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           依赖 React 18+，与 valtio、derive-valtio、valtio-history 一起使用。选择你的包管理器：
         </p>
-        <div className="rounded-xl border border-violet-200/50 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="rounded-2xl border border-gray-200/90 bg-white/95 shadow-md shadow-violet-100/40 dark:border-slate-600 dark:bg-slate-800/95 dark:shadow-slate-900/50">
           <div
             role="tablist"
             aria-label="包管理器"
-            className="flex flex-wrap gap-0 border-b border-violet-200/50 dark:border-slate-600"
+            className="flex flex-wrap gap-0 border-b border-gray-200 dark:border-slate-600"
           >
             {installCommands.map(({label}) => {
               const isActive = installTab === label
@@ -115,24 +124,24 @@ export function Home() {
             aria-labelledby={`install-tab-${activeCmd.label}`}
             className="p-4"
           >
-            <code className="block rounded-lg border border-violet-200/60 bg-slate-50 px-3 py-2.5 font-mono text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+            <code className="block rounded-lg border border-gray-200 bg-slate-50 px-3 py-2.5 font-mono text-sm text-slate-800 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
               {activeCmd.cmd}
             </code>
           </div>
         </div>
       </section>
 
-      <section className="mb-10" aria-labelledby="advantages-heading">
-        <h2 id="advantages-heading" className="mb-3 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <section className="mb-12 sm:mb-16" aria-labelledby="advantages-heading">
+        <h2 id="advantages-heading" className="mb-4 text-xl font-medium text-slate-800 dark:text-slate-200">
           与原生 Valtio 相比的核心优势
         </h2>
-        <ul className="space-y-3">
+        <ul className="grid gap-4 sm:grid-cols-2">
           {advantages.map(({title, desc}) => (
             <li
               key={title}
-              className="rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-slate-800"
+              className="rounded-2xl border border-gray-200/90 bg-white/95 p-4 shadow-md shadow-violet-100/50 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-100/60 dark:border-slate-600 dark:bg-slate-800/95 dark:shadow-slate-900/50 dark:hover:shadow-slate-800/60"
             >
-              <h3 className="mb-1 font-medium text-slate-900 dark:text-slate-100">{title}</h3>
+              <h3 className="mb-1.5 font-medium text-slate-900 dark:text-slate-100">{title}</h3>
               <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{desc}</p>
             </li>
           ))}
@@ -140,15 +149,15 @@ export function Home() {
       </section>
 
       <section aria-labelledby="docs-nav-heading">
-        <h2 id="docs-nav-heading" className="mb-4 text-lg font-medium text-slate-800 dark:text-slate-200">
+        <h2 id="docs-nav-heading" className="mb-4 text-xl font-medium text-slate-800 dark:text-slate-200">
           用法导航
         </h2>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map(({href, title, desc}) => (
             <li key={href}>
               <Link
                 href={href}
-                className="block cursor-pointer rounded-xl border border-violet-200/50 bg-white p-5 shadow-sm transition-colors duration-200 hover:border-violet-300 hover:shadow-md focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF5FF] dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:focus-visible:ring-offset-slate-900"
+                className="block cursor-pointer rounded-2xl border border-gray-200/90 bg-white/95 p-5 shadow-md shadow-violet-100/50 transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-100/60 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF5FF] dark:border-slate-600 dark:bg-slate-800/95 dark:shadow-slate-900/50 dark:hover:border-slate-500 dark:hover:shadow-slate-800/60 dark:focus-visible:ring-offset-slate-900"
               >
                 <h3 className="mb-1 font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
                 <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{desc}</p>

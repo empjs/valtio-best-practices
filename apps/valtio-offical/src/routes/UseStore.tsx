@@ -55,10 +55,10 @@ const [snap, store] = useStore(() => ({
 `
 
 const btn =
-  'cursor-pointer rounded border border-violet-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 hover:border-violet-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+  'cursor-pointer rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
 
 const cardInner =
-  'rounded-lg border border-violet-200/50 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
+  'rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
 
 /** 每个实例内部 useStore，拥有独立 count，互不影响 */
 function LocalCounterBlock({label}: {label: string}) {
@@ -70,7 +70,7 @@ function LocalCounterBlock({label}: {label: string}) {
       <button
         type="button"
         onClick={() => store.set('count', snap.count + 1)}
-        className="cursor-pointer rounded border border-violet-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
+        className="cursor-pointer rounded border border-gray-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
       >
         +1
       </button>
@@ -79,10 +79,11 @@ function LocalCounterBlock({label}: {label: string}) {
 }
 
 /** 带历史的 useStore demo */
-function HistoryDemoBlock() {
+function HistoryDemoBlock({label}: {label?: string}) {
   const [snap, store] = useStore(() => ({count: 0}), {history: {limit: 10}})
   return (
     <div className={cardInner}>
+      {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
       <p className="mb-2 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.value.count}</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => (store.value.count = snap.value.count + 1)} className={btn}>
@@ -112,12 +113,13 @@ function HistoryDemoBlock() {
 }
 
 /** 带派生的 useStore demo */
-function DerivedDemoBlock() {
+function DerivedDemoBlock({label}: {label?: string}) {
   const [baseSnap, baseStore, derivedSnap] = useStore(() => ({a: 1, b: 2}), {
     derive: (get, base) => ({sum: get(base).a + get(base).b}),
   })
   return (
     <div className={cardInner}>
+      {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
       <p className="mb-1 tabular-nums text-slate-900 dark:text-slate-100">
         base: a={baseSnap.a}, b={baseSnap.b}
       </p>
@@ -130,7 +132,7 @@ function DerivedDemoBlock() {
 }
 
 /** 异步请求（局部 store）demo */
-function AsyncDemoBlock() {
+function AsyncDemoBlock({label}: {label?: string}) {
   const [snap, store] = useStore(() => ({
     user: null as {name: string} | null,
     loading: false,
@@ -145,15 +147,25 @@ function AsyncDemoBlock() {
     },
   }))
 
-  if (snap.loading) return <p className="text-slate-500">Loading…</p>
+  if (snap.loading)
+    return (
+      <div className={cardInner}>
+        {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
+        <p className="text-slate-500">Loading…</p>
+      </div>
+    )
   if (snap.error)
     return (
-      <p className="text-red-600" role="alert">
-        Error: {snap.error.message}
-      </p>
+      <div className={cardInner}>
+        {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
+        <p className="text-red-600" role="alert">
+          Error: {snap.error.message}
+        </p>
+      </div>
     )
   return (
     <div className={cardInner}>
+      {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
       <p className="mb-2 text-slate-900 dark:text-slate-100">{snap.user ? `user: ${snap.user.name}` : '未加载'}</p>
       <button type="button" onClick={() => store.loadUser()} className={btn}>
         {snap.user ? '重新加载' : '加载用户'}
@@ -165,7 +177,7 @@ function AsyncDemoBlock() {
 export function UseStore() {
   const demo = (
     <section
-      className="space-y-6 rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+      className="space-y-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       aria-live="polite"
     >
       <div>
@@ -187,50 +199,80 @@ export function UseStore() {
       </div>
       <div>
         <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">2. 带历史的 useStore</h3>
-        <HistoryDemoBlock />
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          每个实例内部 useStore，各自维护自己的 count 与历史，互不影响。
+        </p>
+        <div className="flex gap-3">
+          <div className="min-w-0 flex-1">
+            <HistoryDemoBlock label="实例 A" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <HistoryDemoBlock label="实例 B" />
+          </div>
+        </div>
       </div>
       <div>
         <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">3. 带派生的 useStore</h3>
-        <DerivedDemoBlock />
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          每个实例内部 useStore + derive，各自维护自己的 a、b 与派生 sum，互不影响。
+        </p>
+        <div className="flex gap-3">
+          <div className="min-w-0 flex-1">
+            <DerivedDemoBlock label="实例 A" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <DerivedDemoBlock label="实例 B" />
+          </div>
+        </div>
       </div>
       <div>
         <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">4. 异步请求（局部 store）</h3>
-        <AsyncDemoBlock />
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+          每个实例内部 useStore，各自维护自己的 user / loading / error，互不影响。
+        </p>
+        <div className="flex gap-3">
+          <div className="min-w-0 flex-1">
+            <AsyncDemoBlock label="实例 A" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <AsyncDemoBlock label="实例 B" />
+          </div>
+        </div>
       </div>
     </section>
   )
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">useStore</h1>
-      <p className="mb-6 text-slate-600 dark:text-slate-400">
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">useStore</h1>
+      <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         在组件内创建局部 store，返回 [snap, store]。支持常规、带历史、带派生；异步请求用常规 store + 手动
         loading/error。
       </p>
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">如何导入</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">如何导入</h2>
       <CodeBlock code={codeImport} title="导入" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">签名</h2>
-      <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">签名</h2>
+      <p className="mb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
         useStore(initialState, options?) → [snap, store] 或 [baseSnap, baseStore, derivedSnap]（options.derive 时）
       </p>
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">用法示例（常规）</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">用法示例（常规）</h2>
       <CodeBlock code={codeUsage} title="组件内使用" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">带历史的 useStore</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">带历史的 useStore</h2>
       <CodeBlock code={codeHistory} title="options.history" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">带派生的 useStore</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">带派生的 useStore</h2>
       <CodeBlock code={codeDerived} title="options.derive" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
         异步请求（常规 useStore + 手动 loading/error）
       </h2>
       <CodeBlock code={codeAsync} title="异步请求" />
 
-      <h2 className="mb-2 mt-6 text-lg font-medium text-slate-800 dark:text-slate-200">何时用</h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">何时用</h2>
       <CodeBlock code={codeWhen} title="选用场景" />
     </PageWithDemo>
   )

@@ -12,8 +12,8 @@ interface PageWithDemoProps {
  */
 export function PageWithDemo({ children, demo }: PageWithDemoProps) {
   return (
-    <main className="mx-auto max-w-6xl px-4 pt-6 pb-8 sm:pt-8 sm:pb-10">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 lg:items-start">
+    <main className="mx-auto max-w-6xl px-4 pt-8 pb-10 sm:pt-10 sm:pb-12">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10 lg:items-start">
         <div className="min-w-0">{children}</div>
         <aside
           className="shrink-0 lg:sticky lg:top-4"
