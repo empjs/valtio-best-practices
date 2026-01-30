@@ -1,4 +1,0 @@
-@import "tailwindcss";
-
-/* 手动切换暗色：在根节点加 .dark 时应用 dark: 样式 */
-@custom-variant dark (&&:where(.dark, .dark *));

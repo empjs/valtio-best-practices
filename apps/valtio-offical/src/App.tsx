@@ -1,14 +1,12 @@
 import {Route, Switch} from 'wouter'
 import {Nav} from './components/Nav'
 import {
-  AsyncStore,
   Collections,
   CreateStore,
   Home,
   Performance,
+  Subscribe,
   UseStore,
-  WithDerived,
-  WithHistory,
 } from './routes/index'
 
 const App = () => {
@@ -26,10 +24,8 @@ const App = () => {
           <Route path="/" component={Home} />
           <Route path="/create-store" component={CreateStore} />
           <Route path="/use-store" component={UseStore} />
-          <Route path="/with-history" component={WithHistory} />
-          <Route path="/with-derived" component={WithDerived} />
-          <Route path="/async-store" component={AsyncStore} />
           <Route path="/collections" component={Collections} />
+          <Route path="/subscribe" component={Subscribe} />
           <Route path="/performance" component={Performance} />
         </Switch>
       </main>

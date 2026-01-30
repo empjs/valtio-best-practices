@@ -4,10 +4,8 @@ const links = [
   { href: '/', label: '首页' },
   { href: '/create-store', label: 'createStore' },
   { href: '/use-store', label: 'useStore' },
-  { href: '/with-history', label: 'withHistory' },
-  { href: '/with-derived', label: 'withDerived' },
-  { href: '/async-store', label: 'asyncStore' },
   { href: '/collections', label: 'collections' },
+  { href: '/subscribe', label: 'subscribe' },
   { href: '/performance', label: 'performance' },
 ] as const
 

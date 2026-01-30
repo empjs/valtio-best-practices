@@ -19,8 +19,8 @@ export type InitialStateOrFn<T = object> = T | (() => T)
 /** 派生函数：接收 get(proxy) 得到快照，返回派生出的新状态 */
 export type DeriveFn<TProxy, TDerived> = (get: (proxy: TProxy) => Snapshot<TProxy>, proxy: TProxy) => TDerived
 
-/** 创建 Store 时的可选配置 */
-export interface CreateOptions {
+/** 创建 Store 时的可选配置（仅基础） */
+export interface CreateOptionsBase {
   devtools?: boolean
   name?: string
 }
@@ -32,6 +32,12 @@ export type WithHistoryOptions = Parameters<typeof proxyWithHistory>[1] extends 
     : {limit?: number}
   : {limit?: number}
 
+/** 创建 Store 时的可选配置（支持 history、derive） */
+export interface CreateOptions<T = object, D = unknown> extends CreateOptionsBase {
+  history?: WithHistoryOptions
+  derive?: DeriveFn<T, D>
+}
+
 /** 带历史记录的 snapshot 类型 */
 export interface WithHistorySnapshot<T extends object> {
   value: Snapshot<T>
@@ -42,10 +48,12 @@ export interface WithHistorySnapshot<T extends object> {
   redo: () => void
 }
 
-/** 异步 Store 的扩展状态 */
-export interface AsyncStoreState {
-  _loading: Record<string, boolean>
-  _error: Record<string, unknown>
+/** proxyWithHistory 的返回类型 */
+export type HistoryStore<T extends object> = ReturnType<typeof proxyWithHistory<T>>
+
+/** 带历史的 createStore 返回（含 useSnapshot，与普通 store 用法一致） */
+export type HistoryStoreWithSnapshot<T extends object> = HistoryStore<T> & {
+  useSnapshot(): WithHistorySnapshot<T>
 }
 
 // ============================================
@@ -205,189 +213,136 @@ export function enhanceStore<T extends object>(store: T, initialState?: T): T & 
 }
 
 // ============================================
-// 基础 Store 创建
+// createStore（支持常规 / history / derive）
 // ============================================
 
-/**
- * 创建基础 store
- * @param initialState 初始状态
- * @param options 配置选项（devtools、name）
- * @returns 增强后的 store
- */
-export function createStore<T extends object>(
+/** 带 derive 时的返回：base + derived（均含 useSnapshot，与普通 store 用法一致） */
+export interface StoreWithDerived<T extends object, D> {
+  base: T & StoreBaseMethods<T>
+  derived: object & { useSnapshot(): D }
+}
+
+function createStoreImpl<T extends object>(
   initialState: T,
-  options: CreateOptions = {
-    devtools: true,
-  },
-): T & StoreBaseMethods<T> {
+  options?: CreateOptionsBase & {history?: WithHistoryOptions; derive?: DeriveFn<T, unknown>},
+): T & StoreBaseMethods<T> | HistoryStore<T> | StoreWithDerived<T, unknown> {
+  const opts = options ?? {}
+  if (opts.history != null) {
+    const hist = proxyWithHistory(initialState, opts.history as Parameters<typeof proxyWithHistory>[1]) as HistoryStoreWithSnapshot<T>
+    hist.useSnapshot = function useSnapshotFromStore() {
+      return useSnapshot(hist) as unknown as WithHistorySnapshot<T>
+    }
+    return hist
+  }
+  if (opts.derive != null) {
+    const proxied = proxy(initialState) as T
+    const baseStore = enhanceStore(proxied, initialState)
+    const derivedState = derive(opts.derive, {proxy: proxied}) as object & { useSnapshot?: () => unknown }
+    derivedState.useSnapshot = function useSnapshotFromDerived() {
+      return useSnapshot(derivedState)
+    }
+    return {base: baseStore, derived: derivedState} as StoreWithDerived<T, unknown>
+  }
   const proxied = proxy(initialState) as T
   const enhanced = enhanceStore(proxied, initialState)
-
-  if (process.env.NODE_ENV === 'development' && options?.devtools !== false) {
-    devtools(proxied, {name: options?.name ?? 'Store'})
+  if (process.env.NODE_ENV === 'development' && opts.devtools !== false) {
+    devtools(proxied, {name: opts.name ?? 'Store'})
   }
-
   return enhanced
 }
 
 /**
- * React Hook - 创建局部 store
- * @param initialState 初始状态或惰性初始化函数
- * @returns [snapshot, store]
+ * 创建 store（常规 / 带历史 / 带派生）
+ * @param initialState 初始状态
+ * @param options 配置：devtools、name；或 history、或 derive
+ * @returns 增强后的 store，或 { base, derived }（当 options.derive 时）
  */
-export function useStore<T extends object>(initialState: InitialStateOrFn<T>): [Snapshot<T>, T & StoreBaseMethods<T>] {
+export function createStore<T extends object>(
+  initialState: T,
+  options: CreateOptionsBase & {history: WithHistoryOptions},
+): HistoryStoreWithSnapshot<T>
+export function createStore<T extends object, D>(
+  initialState: T,
+  options: CreateOptionsBase & {derive: DeriveFn<T, D>},
+): StoreWithDerived<T, D>
+export function createStore<T extends object>(
+  initialState: T,
+  options?: CreateOptionsBase & {history?: WithHistoryOptions},
+): T & StoreBaseMethods<T>
+export function createStore<T extends object, D>(
+  initialState: T,
+  options?: CreateOptions<T, D>,
+): T & StoreBaseMethods<T> | HistoryStoreWithSnapshot<T> | StoreWithDerived<T, D> {
+  return createStoreImpl(initialState, options) as T & StoreBaseMethods<T> | HistoryStoreWithSnapshot<T> | StoreWithDerived<T, D>
+}
+
+// ============================================
+// useStore（支持常规 / history / derive）
+// ============================================
+
+/** useStore 的 options（仅 history / derive，无 devtools/name） */
+export interface UseStoreOptions<T = object, D = unknown> {
+  history?: WithHistoryOptions
+  derive?: DeriveFn<T, D>
+}
+
+function useStoreImpl<T extends object>(
+  initialState: InitialStateOrFn<T>,
+  options?: UseStoreOptions<T, unknown>,
+): [Snapshot<T> | WithHistorySnapshot<T>, T & StoreBaseMethods<T> | HistoryStore<T>, unknown?] {
+  const opts = options ?? {}
+  if (opts.history != null) {
+    const store = useMemo(() => {
+      const state = resolveInitialState(initialState)
+      return proxyWithHistory(state, opts.history as Parameters<typeof proxyWithHistory>[1])
+    }, [])
+    const snap = useSnapshot(store) as unknown as WithHistorySnapshot<T>
+    return [snap, store as HistoryStore<T>]
+  }
+  if (opts.derive != null) {
+    const config = useMemo(() => {
+      const state = resolveInitialState(initialState)
+      const proxied = proxy(state) as T
+      const baseStore = enhanceStore(proxied, state)
+      const derivedState = derive(opts.derive!, {proxy: proxied})
+      return {base: baseStore, derived: derivedState}
+    }, [])
+    const baseSnap = useSnapshot(config.base) as Snapshot<T>
+    const derivedSnap = useSnapshot(config.derived)
+    return [baseSnap, config.base, derivedSnap]
+  }
   const store = useMemo(() => {
     const state = resolveInitialState(initialState)
     const proxied = proxy(state) as T
     return enhanceStore(proxied, state)
   }, [])
-
   const snap = useSnapshot(store) as Snapshot<T>
   return [snap, store]
 }
 
-// ============================================
-// 带历史记录的 Store
-// ============================================
-
 /**
- * 创建带历史记录的 store
- * @param initialState 初始状态
- * @param options 历史记录选项（limit 等）
- * @returns valtio-history 返回的 store 结构
- */
-export function createStoreWithHistory<T extends object>(initialState: T, options: WithHistoryOptions = {}) {
-  return proxyWithHistory(initialState, options as Parameters<typeof proxyWithHistory>[1])
-}
-
-/**
- * React Hook - 创建带历史记录的局部 store
+ * React Hook - 创建局部 store（常规 / 带历史 / 带派生）
  * @param initialState 初始状态或惰性初始化函数
- * @param options 历史记录选项
- * @returns [snapshot, store]
+ * @param options 可选：history 或 derive
+ * @returns [snapshot, store] 或 [baseSnap, baseStore, derivedSnap]（当 options.derive 时）
  */
-export function useStoreWithHistory<T extends object>(
+export function useStore<T extends object>(initialState: InitialStateOrFn<T>): [Snapshot<T>, T & StoreBaseMethods<T>]
+export function useStore<T extends object>(
   initialState: InitialStateOrFn<T>,
-  options: WithHistoryOptions = {},
-): [WithHistorySnapshot<T>, ReturnType<typeof proxyWithHistory<T>>] {
-  const store = useMemo(() => {
-    const state = resolveInitialState(initialState)
-    return proxyWithHistory(state, options as Parameters<typeof proxyWithHistory>[1])
-  }, [])
-
-  const snap = useSnapshot(store) as unknown as WithHistorySnapshot<T>
-  return [snap, store]
-}
-
-// ============================================
-// 带派生状态的 Store
-// ============================================
-
-/**
- * 创建带派生状态的 store
- * @param initialState 初始状态
- * @param deriveFn 派生函数
- * @returns { base, derived }
- */
-export function createStoreWithDerived<T extends object, D>(initialState: T, deriveFn: DeriveFn<T, D>) {
-  const proxied = proxy(initialState) as T
-  const baseStore = enhanceStore(proxied, initialState)
-  const derivedState = derive(deriveFn, {proxy: proxied})
-
-  return {
-    base: baseStore,
-    derived: derivedState,
-  }
-}
-
-/**
- * React Hook - 创建带派生状态的局部 store
- * @param initialState 初始状态或惰性初始化函数
- * @param deriveFn 派生函数
- * @returns [baseSnapshot, baseStore, derivedSnapshot]
- */
-export function useStoreWithDerived<T extends object, D>(
+  options: UseStoreOptions<T> & {history: WithHistoryOptions},
+): [WithHistorySnapshot<T>, HistoryStore<T>]
+export function useStore<T extends object, D>(
   initialState: InitialStateOrFn<T>,
-  deriveFn: DeriveFn<T, D>,
-): [Snapshot<T>, T & StoreBaseMethods<T>, D] {
-  const config = useMemo(() => {
-    const state = resolveInitialState(initialState)
-    const proxied = proxy(state) as T
-    const baseStore = enhanceStore(proxied, state)
-    const derivedState = derive(deriveFn, {proxy: proxied})
-
-    return {base: baseStore, derived: derivedState}
-  }, [])
-
-  const baseSnap = useSnapshot(config.base) as Snapshot<T>
-  const derivedSnap = useSnapshot(config.derived) as D
-
-  return [baseSnap, config.base, derivedSnap]
-}
-
-// ============================================
-// 异步 Store
-// ============================================
-
-/** 异步 Store 的完整类型（asyncFn 按实参推导，无需外置类型断言） */
-export interface AsyncStore<T extends object> extends StoreBaseMethods<T & AsyncStoreState> {
-  async<K extends string, F extends (...args: any[]) => Promise<any>>(
-    key: K,
-    asyncFn: F,
-  ): (...args: Parameters<F>) => ReturnType<F>
-}
-
-/**
- * 创建异步 store，自动管理 _loading 和 _error
- * @param initialState 初始状态
- * @returns 增强后的异步 store
- */
-export function createAsyncStore<T extends object>(initialState: T): T & AsyncStoreState & AsyncStore<T> {
-  const stateWithAsync = {
-    ...initialState,
-    _loading: {} as Record<string, boolean>,
-    _error: {} as Record<string, unknown>,
-  }
-
-  const proxied = proxy(stateWithAsync)
-  const enhanced = enhanceStore(proxied, stateWithAsync) as T & AsyncStoreState & AsyncStore<T>
-
-  // 添加 async 方法（F 由调用处推导，返回类型与 asyncFn 一致）
-  enhanced.async = function <K extends string, F extends (...args: any[]) => Promise<any>>(key: K, asyncFn: F) {
-    return (async (...args: Parameters<F>) => {
-      enhanced._loading[key] = true
-      enhanced._error[key] = null
-
-      try {
-        const result = await asyncFn(...args)
-        enhanced._loading[key] = false
-        return result
-      } catch (error) {
-        enhanced._error[key] = error
-        enhanced._loading[key] = false
-        throw error
-      }
-    }) as (...args: Parameters<F>) => ReturnType<F>
-  }
-
-  return enhanced
-}
-
-/**
- * React Hook - 创建异步局部 store
- * @param initialState 初始状态或惰性初始化函数
- * @returns [snapshot, store]
- */
-export function useAsyncStore<T extends object>(
+  options: UseStoreOptions<T, D> & {derive: DeriveFn<T, D>},
+): [Snapshot<T>, T & StoreBaseMethods<T>, D]
+export function useStore<T extends object, D>(
   initialState: InitialStateOrFn<T>,
-): [Snapshot<T & AsyncStoreState>, T & AsyncStoreState & AsyncStore<T>] {
-  const store = useMemo(() => {
-    const state = resolveInitialState(initialState)
-    return createAsyncStore(state)
-  }, [])
-
-  const snap = useSnapshot(store) as Snapshot<T & AsyncStoreState>
-  return [snap, store]
+  options?: UseStoreOptions<T, D>,
+): [Snapshot<T>, T & StoreBaseMethods<T>] | [WithHistorySnapshot<T>, HistoryStore<T>] | [Snapshot<T>, T & StoreBaseMethods<T>, D] {
+  return useStoreImpl(initialState, options) as
+    | [Snapshot<T>, T & StoreBaseMethods<T>]
+    | [WithHistorySnapshot<T>, HistoryStore<T>]
+    | [Snapshot<T>, T & StoreBaseMethods<T>, D]
 }
 
 // ============================================

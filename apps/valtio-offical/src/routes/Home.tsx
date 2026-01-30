@@ -7,7 +7,8 @@ const cards = [
   {href: '/with-derived', title: 'withDerived', desc: '派生状态：base + derived'},
   {href: '/async-store', title: 'asyncStore', desc: '异步：store.async、_loading/_error'},
   {href: '/collections', title: 'collections', desc: 'createMap / createSet'},
-  {href: '/performance', title: 'performance', desc: 'subscribeKey、batch、细粒度订阅'},
+  {href: '/subscribe', title: 'subscribe', desc: 'subscribeKey、subscribeKeys、batch、细粒度订阅'},
+  {href: '/performance', title: 'performance', desc: '长列表：batch 批量操作、content-visibility'},
 ] as const
 
 export function Home() {
