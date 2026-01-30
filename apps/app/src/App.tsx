@@ -1,29 +1,52 @@
 import React from 'react'
-import {AsyncStateDemo} from './components/AsyncStateDemo'
-import {DerivedStateDemo} from './components/DerivedStateDemo'
-import {GlobalStateDemo} from './components/GlobalStateDemo'
-import {HistoryDemo} from './components/HistoryDemo'
-import {LocalStateDemo} from './components/LocalStateDemo'
-import {MixedDemo} from './components/MixedDemo'
-import {CounterStore, globalCounterStore} from './stores/CounterStore'
+import {Link, Route, Switch, useLocation} from 'wouter'
+import {BasicsPage} from './components/BasicsPage'
+import {HomePage} from './components/HomePage'
+import {MorePage} from './components/MorePage'
+import {PerfPage} from './components/PerfPage'
+
+function NavLink({href, children}: {href: string; children: React.ReactNode}) {
+  const [location] = useLocation()
+  const isActive = location === href || (href !== '/' && location.startsWith(href))
+  return (
+    <Link href={href}>
+      <a
+        className={`px-3 py-2 rounded transition font-medium ${
+          isActive ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+        }`}
+      >
+        {children}
+      </a>
+    </Link>
+  )
+}
 
 export default function App() {
   return (
     <div className="p-8 font-sans bg-gray-50 min-h-screen text-gray-800">
-      <h1 className="text-3xl font-extrabold mb-6 text-gray-900 border-b pb-4">EMP ValtioStore</h1>
+      <header className="flex items-center gap-4 mb-6 border-b pb-4">
+        <Link href="/">
+          <a className="text-3xl font-extrabold text-gray-900 hover:text-gray-700">EMP ValtioStore</a>
+        </Link>
+        <nav className="flex gap-1">
+          <NavLink href="/">首页</NavLink>
+          <NavLink href="/basics">已有 Demo</NavLink>
+          <NavLink href="/perf">高性能</NavLink>
+          <NavLink href="/more">其他</NavLink>
+        </nav>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <LocalStateDemo />
-          <GlobalStateDemo />
-          <MixedDemo />
-        </div>
-        <div className="space-y-6">
-          <HistoryDemo />
-          <DerivedStateDemo />
-          <AsyncStateDemo />
-        </div>
-      </div>
+      <main>
+        <Switch>
+          <Route path="/" component={HomePage} />
+          <Route path="/basics" component={BasicsPage} />
+          <Route path="/perf" component={PerfPage} />
+          <Route path="/more" component={MorePage} />
+          <Route path="/:rest*">
+            <div className="text-gray-500">未找到页面</div>
+          </Route>
+        </Switch>
+      </main>
     </div>
   )
 }

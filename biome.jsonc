@@ -1,7 +1,4 @@
 {
   "root": true,
-  "extends": ["@empjs/biome-config"],
-  "files": {
-    "experimentalScannerIgnores": [".vscode/**"]
-  }
+  "extends": ["@empjs/biome-config"]
 }

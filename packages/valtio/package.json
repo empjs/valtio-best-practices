@@ -1,5 +1,5 @@
 {
-  "name": "@empjs/valtio-store",
+  "name": "@empjs/valtio",
   "version": "1.0.0",
   "description": "valtio store",
   "license": "MIT",
@@ -36,22 +36,10 @@
     "test": "bun test",
     "tc": "bun test --coverage"
   },
-  "devDependencies": {
-    "@happy-dom/global-registrator": "^19.0.0",
-    "@rslib/core": "^0.19.3",
-    "@testing-library/react": "^16.1.0",
-    "@types/bun": "latest",
-    "@types/jsdom": "^27.0.0",
-    "jsdom": "^25.0.1",
-    "tsup": "8.5.1"
-  },
+  "devDependencies": {},
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
-  },
-  "peerDependenciesMeta": {
-    "react": { "optional": false },
-    "react-dom": { "optional": false }
   },
   "dependencies": {
     "derive-valtio": "^0.2.0",

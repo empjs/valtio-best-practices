@@ -1,8 +1,3 @@
-/**
- * @empjs/valtio-store - 基于 Valtio 的 Store 封装
- *
- * 提供：统一 use() 入口、局部/全局模式、子类实例方法、getSnapshot/toJSON 闭包防抖等
- */
 import {derive} from 'derive-valtio'
 import {useMemo} from 'react'
 import type {Snapshot} from 'valtio'
@@ -10,10 +5,6 @@ import {proxy, ref, snapshot, subscribe, useSnapshot} from 'valtio'
 import {devtools, proxyMap, proxySet, subscribeKey} from 'valtio/utils'
 import type {History} from 'valtio-history'
 import {proxyWithHistory} from 'valtio-history'
-
-// ============================================
-// 类型定义
-// ============================================
 
 /** useWithHistory 返回的 snapshot 类型：value 为只读状态，history 含 index/nodes */
 export interface WithHistorySnapshot<T extends Record<string, unknown>> {
@@ -71,6 +62,16 @@ export type AsyncStoreInstance<S extends ValtioStore> = S & AsyncStoreWithMethod
 /** 取消订阅：subscribe / subscribeKey 等返回的函数，调用即取消监听 */
 export type Unsubscribe = () => void
 
+/** 从快照中筛出可序列化字段（去掉 function/symbol），供 toJSON 与 bindProxyMethods 复用。 */
+function toJSONFromSnapshot(snap: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {}
+  for (const key in snap) {
+    const value = snap[key]
+    if (typeof value !== 'function' && typeof value !== 'symbol') result[key] = value
+  }
+  return result
+}
+
 /**
  * 用闭包固定 proxy 引用，重写 getSnapshot / toJSON。
  * 当 JSON.stringify(store) 或 devtools 等无 receiver 调用 toJSON/getSnapshot 时，
@@ -82,13 +83,7 @@ function bindProxyMethods<T extends ValtioStore>(proxied: T): T {
     return snapshot(p) as Snapshot<T>
   }
   proxied.toJSON = function toJSON(): Record<string, unknown> {
-    const snap = snapshot(p) as Record<string, unknown>
-    const result: Record<string, unknown> = {}
-    for (const key in snap) {
-      const value = snap[key]
-      if (typeof value !== 'function' && typeof value !== 'symbol') result[key] = value
-    }
-    return result
+    return toJSONFromSnapshot(snapshot(p) as Record<string, unknown>)
   }
   proxied.clone = proxied.clone.bind(proxied)
   proxied.subscribe = proxied.subscribe.bind(proxied)
@@ -101,16 +96,41 @@ function bindProxyMethods<T extends ValtioStore>(proxied: T): T {
   return proxied
 }
 
-/**
- * ValtioStore 基类（v3）
- *
- * 子类定义 state + getInitialState() + 业务方法（如 increment），通过静态方法创建/使用：
- * - createGlobal(initialState) → 全局单例，多组件共享
- * - create(initialState) → 每次调用返回新实例
- * - use() / use(initialState) / use(globalStore) → React 统一入口，局部或全局
- *
- * 所有静态工厂均用 `this` 创建实例，保证 CounterStore.createGlobal() 得到 CounterStore 实例。
- */
+/** 在静态工厂中创建当前子类实例，集中处理 noThisInStatic 的合法用法（子类调用时 this 为子类构造器）。 */
+function createSubclassInstance<S extends ValtioStore>(ctor: new () => S): S {
+  return new ctor()
+}
+
+/** 解析 use* 类 Hook 的初始状态：支持 undefined / 对象 / 惰性函数，与 getInitialState 回退。 */
+function resolveInitialState<S extends ValtioStore>(
+  instance: ValtioStore,
+  initialStateOrFn?: InitialStateOrFn<Partial<S>>,
+): Partial<S> {
+  if (initialStateOrFn === undefined) return instance.getInitialState() as Partial<S>
+  return typeof initialStateOrFn === 'function' ? (initialStateOrFn as () => Partial<S>)() : initialStateOrFn
+}
+
+/** 为带 _loading/_error 的 store 挂载 async(key, asyncFn) 方法，供 createAsync / useAsync 复用。 */
+function addAsyncMethod(store: AsyncStoreState & ValtioStore): void {
+  store.async = function (key: string, asyncFn: (...args: unknown[]) => Promise<unknown>) {
+    return async (...args: unknown[]) => {
+      this._loading = this._loading ?? {}
+      this._error = this._error ?? {}
+      this._loading[key] = true
+      this._error[key] = null
+      try {
+        const result = await asyncFn.apply(this, args)
+        this._loading[key] = false
+        return result
+      } catch (error) {
+        this._error[key] = error
+        this._loading[key] = false
+        throw error
+      }
+    }
+  }
+}
+
 class ValtioStore {
   [key: string]: unknown
 
@@ -122,10 +142,6 @@ class ValtioStore {
    * 创建全局单例 Store，所有组件共享同一份状态。
    * 先 bindProxyMethods 再 devtools，避免 devtools 序列化时触发 "Please use proxy object"。
    */
-  /**
-   * 创建全局单例 Store，所有组件共享同一份状态。
-   * 先 bindProxyMethods 再 devtools，避免 devtools 序列化时触发 "Please use proxy object"。
-   */
   static createGlobal<S extends ValtioStore>(
     this: new () => S,
     initialState?: Partial<S>,
@@ -133,25 +149,18 @@ class ValtioStore {
       devtools: true,
     },
   ): S {
-    // biome-ignore lint/complexity/noThisInStatic: subclass ctor required (e.g. CounterStore)
-    const instance = new (this as unknown as new () => S)()
-    if (initialState) Object.assign(instance, initialState)
-    const proxied = proxy(instance) as S
-    const bound = bindProxyMethods(proxied)
-
+    const store = (this as unknown as typeof ValtioStore).create.call(this, initialState) as S
     if (process.env.NODE_ENV === 'development' && options.devtools !== false) {
-      devtools(bound, {name: options.name ?? instance.constructor.name + ' (Global)'})
+      devtools(store, {name: options.name ?? store.constructor.name + ' (Global)'})
     }
-
-    return bound
+    return store
   }
 
   /**
    * 创建局部实例，每次调用都返回新的 proxy，适合单次使用或 createWithDerived 等内部用。
    */
   static create<S extends ValtioStore>(this: new () => S, initialState?: Partial<S>, _options: CreateOptions = {}): S {
-    // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
-    const instance = new (this as unknown as new () => S)()
+    const instance = createSubclassInstance(this)
     if (initialState) Object.assign(instance, initialState)
     const proxied = proxy(instance) as S
     return bindProxyMethods(proxied)
@@ -171,11 +180,8 @@ class ValtioStore {
       const isStore =
         arg && typeof arg === 'object' && typeof (arg as {getSnapshot?: unknown}).getSnapshot === 'function'
       if (isStore) return arg as S
-      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required (e.g. CounterStore)
-      const instance = new (this as unknown as new () => S)()
-      const initial =
-        typeof arg === 'function' ? (arg as () => Partial<S>)() : (arg ?? (instance.getInitialState() as Partial<S>))
-      Object.assign(instance, initial)
+      const instance = createSubclassInstance(this)
+      Object.assign(instance, resolveInitialState(instance, arg))
       return bindProxyMethods(proxy(instance) as S)
     }, [])
 
@@ -195,8 +201,7 @@ class ValtioStore {
     initialState?: Partial<S>,
     options: WithHistoryOptions = {},
   ): StoreWithHistory<S> {
-    // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
-    const instance = new (this as unknown as new () => S)()
+    const instance = createSubclassInstance(this)
     if (initialState) Object.assign(instance, initialState)
     return proxyWithHistory(
       instance,
@@ -213,13 +218,8 @@ class ValtioStore {
     options: WithHistoryOptions = {},
   ): [WithHistorySnapshot<S>, StoreWithHistory<S>] {
     const store = useMemo(() => {
-      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
-      const instance = new (this as unknown as new () => S)()
-      const initial =
-        typeof initialState === 'function'
-          ? (initialState as () => Partial<S>)()
-          : (initialState ?? (instance.getInitialState() as Partial<S>))
-      Object.assign(instance, initial)
+      const instance = createSubclassInstance(this)
+      Object.assign(instance, resolveInitialState(instance, initialState))
       return proxyWithHistory(
         instance,
         options as Parameters<typeof proxyWithHistory>[1],
@@ -239,10 +239,10 @@ class ValtioStore {
     initialState: Partial<S>,
     deriveFn: DeriveFn<S, TDerived>,
   ) {
-    // biome-ignore lint/complexity/noThisInStatic: intentional: subclass ctor for create()
-    const baseStore = (this as any).create(initialState) as S
-    type GetSnapshot = (store: S) => Snapshot<S>
-    const derivedState = derive((get: GetSnapshot) => deriveFn(get, baseStore), {proxy: baseStore})
+    const instance = createSubclassInstance(this)
+    Object.assign(instance, initialState)
+    const baseStore = bindProxyMethods(proxy(instance) as S)
+    const derivedState = derive(deriveFn, {proxy: baseStore})
 
     return {
       base: baseStore,
@@ -259,13 +259,8 @@ class ValtioStore {
     deriveFn: DeriveFn<S, TDerived>,
   ) {
     const config = useMemo(() => {
-      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
-      const instance = new (this as unknown as new () => S)()
-      const initial =
-        typeof initialState === 'function'
-          ? (initialState as () => Partial<S>)()
-          : (initialState ?? (instance.getInitialState() as Partial<S>))
-      Object.assign(instance, initial)
+      const instance = createSubclassInstance(this)
+      Object.assign(instance, resolveInitialState(instance, initialState))
       const baseStore = bindProxyMethods(proxy(instance) as S)
       const derivedState = derive(deriveFn, {proxy: baseStore})
 
@@ -373,18 +368,7 @@ class ValtioStore {
 
   /** 转为纯数据对象（去掉方法），供 JSON.stringify 或持久化使用；实际调用处多用 bindProxyMethods 重写版。 */
   toJSON(): Record<string, unknown> {
-    const snap = this.getSnapshot() as Record<string, unknown>
-    const result: Record<string, unknown> = {}
-
-    for (const key in snap) {
-      const value = snap[key]
-      if (typeof value === 'function' || typeof value === 'symbol') {
-        continue
-      }
-      result[key] = value
-    }
-
-    return result
+    return toJSONFromSnapshot(this.getSnapshot() as Record<string, unknown>)
   }
 
   /** 从纯数据对象写回 store。 */
@@ -436,36 +420,17 @@ class ValtioStore {
    * 调用 store.async('fetchUser', fn) 会返回一个包装函数，执行时自动设 _loading[key]、_error[key]。
    */
   static createAsync<S extends ValtioStore>(this: new () => S, initialState?: Partial<S>): AsyncStoreInstance<S> {
+    const instance = createSubclassInstance(this)
+    const initial = initialState ?? (instance.getInitialState() as Partial<S>)
     const enhanced: AsyncStoreState = {
-      ...initialState,
+      ...initial,
       _loading: {},
       _error: {},
     }
-
-    // Must use subclass constructor (e.g. UserStore), not ValtioStore — otherwise instance has no subclass methods
-    // biome-ignore lint/complexity/noThisInStatic: intentional: this is the subclass ctor for create()
-    const instance = (this as any).create(enhanced as unknown as Record<string, unknown>) as AsyncStoreInstance<S>
-
-    instance.async = function (key: string, asyncFn: (...args: unknown[]) => Promise<unknown>) {
-      return async (...args: unknown[]) => {
-        this._loading = this._loading ?? {}
-        this._error = this._error ?? {}
-        this._loading[key] = true
-        this._error[key] = null
-
-        try {
-          const result = await asyncFn.apply(this, args)
-          this._loading[key] = false
-          return result
-        } catch (error) {
-          this._error[key] = error
-          this._loading[key] = false
-          throw error
-        }
-      }
-    }
-
-    return instance
+    Object.assign(instance, enhanced)
+    const proxied = proxy(instance) as AsyncStoreInstance<S>
+    addAsyncMethod(proxied)
+    return bindProxyMethods(proxied)
   }
 
   /**
@@ -476,39 +441,12 @@ class ValtioStore {
     initialState?: InitialStateOrFn<Partial<S>>,
   ): [Snapshot<AsyncStoreInstance<S>>, AsyncStoreInstance<S>] {
     const store = useMemo(() => {
-      const initial =
-        typeof initialState === 'function' ? (initialState as () => Partial<S>)() : ((initialState ?? {}) as Partial<S>)
-
-      const enhanced: AsyncStoreState = {
-        ...initial,
-        _loading: {},
-        _error: {},
-      }
-
-      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required (e.g. UserStore)
-      const instance = new (this as unknown as new () => S)()
+      const instance = createSubclassInstance(this)
+      const initial = resolveInitialState(instance, initialState)
+      const enhanced: AsyncStoreState = {...initial, _loading: {}, _error: {}}
       Object.assign(instance, enhanced)
       const proxied = proxy(instance) as AsyncStoreInstance<S>
-
-      proxied.async = function (key: string, asyncFn: (...args: unknown[]) => Promise<unknown>) {
-        return async (...args: unknown[]) => {
-          this._loading = this._loading ?? {}
-          this._error = this._error ?? {}
-          this._loading[key] = true
-          this._error[key] = null
-
-          try {
-            const result = await asyncFn.apply(this, args)
-            this._loading[key] = false
-            return result
-          } catch (error) {
-            this._error[key] = error
-            this._loading[key] = false
-            throw error
-          }
-        }
-      }
-
+      addAsyncMethod(proxied)
       return bindProxyMethods(proxied)
     }, [])
 
