@@ -1,5 +1,5 @@
 import {derive} from 'derive-valtio'
-import {useMemo} from 'react'
+import {useEffect, useMemo} from 'react'
 import type {Snapshot} from 'valtio'
 import {proxy, ref, snapshot, subscribe, useSnapshot} from 'valtio'
 import {deepClone, devtools, proxyMap, proxySet, subscribeKey} from 'valtio/utils'
@@ -228,9 +228,29 @@ function createStoreImpl<T extends object>(
 ): T & StoreBaseMethods<T> | HistoryStore<T> | StoreWithDerived<T, unknown> {
   const opts = options ?? {}
   if (opts.history != null) {
-    const hist = proxyWithHistory(initialState, opts.history as Parameters<typeof proxyWithHistory>[1]) as HistoryStoreWithSnapshot<T>
+    const histOptions = opts.history as Record<string, unknown>
+    const hist = proxyWithHistory(
+      initialState,
+      { skipSubscribe: histOptions.skipSubscribe as boolean } as Parameters<typeof proxyWithHistory>[1],
+    ) as HistoryStoreWithSnapshot<T>
     hist.useSnapshot = function useSnapshotFromStore() {
       return useSnapshot(hist) as unknown as WithHistorySnapshot<T>
+    }
+    const limit = typeof histOptions.limit === 'number' && histOptions.limit > 0 ? histOptions.limit : 0
+    if (limit > 0) {
+      subscribe(hist, () => {
+        if (hist.history.nodes.length <= limit + 1) return
+        const trim = () => {
+          while (hist.history.nodes.length > limit + 1) {
+            hist.remove(0)
+          }
+        }
+        if (typeof setTimeout !== 'undefined') {
+          setTimeout(trim, 0)
+        } else {
+          trim()
+        }
+      })
     }
     return hist
   }
@@ -292,10 +312,30 @@ function useStoreImpl<T extends object>(
 ): [Snapshot<T> | WithHistorySnapshot<T>, T & StoreBaseMethods<T> | HistoryStore<T>, unknown?] {
   const opts = options ?? {}
   if (opts.history != null) {
+    const histOptions = opts.history as Record<string, unknown>
     const store = useMemo(() => {
       const state = resolveInitialState(initialState)
-      return proxyWithHistory(state, opts.history as Parameters<typeof proxyWithHistory>[1])
+      return proxyWithHistory(state, { skipSubscribe: histOptions.skipSubscribe as boolean } as Parameters<typeof proxyWithHistory>[1])
     }, [])
+    const limit = typeof histOptions.limit === 'number' && histOptions.limit > 0 ? histOptions.limit : 0
+    useEffect(() => {
+      if (limit <= 0) return
+      let timeoutId: ReturnType<typeof setTimeout> | null = null
+      const unsub = subscribe(store, () => {
+        if (store.history.nodes.length <= limit + 1) return
+        if (timeoutId != null) clearTimeout(timeoutId)
+        timeoutId = setTimeout(() => {
+          while (store.history.nodes.length > limit + 1) {
+            store.remove(0)
+          }
+          timeoutId = null
+        }, 0)
+      })
+      return () => {
+        unsub()
+        if (timeoutId != null) clearTimeout(timeoutId)
+      }
+    }, [store, limit])
     const snap = useSnapshot(store) as unknown as WithHistorySnapshot<T>
     return [snap, store as HistoryStore<T>]
   }

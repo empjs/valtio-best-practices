@@ -36,7 +36,10 @@
     "test": "bun test",
     "tc": "bun test --coverage"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^14.0.0",
+    "@testing-library/react": "^14.2.0"
+  },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"

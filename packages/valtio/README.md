@@ -55,19 +55,27 @@ function Form() {
 
 ### 历史记录（撤销/重做）
 
+- **不做限制**：传 `{ history: {} }` 或不传 `limit`，历史节点不裁剪，可撤销步数无上限。
+- **做限制**：传 `{ history: { limit: 50 } }` 表示最多保留 50 步可撤销；超出后由本库自动丢弃最旧节点（valtio-history 原生不支持 limit）。
+
 **全局：**
 
 ```tsx
-const store = createStore(
-  { text: '' },
-  { history: { limit: 50 } }
-)
+// 不限制步数
+const store = createStore({ text: '' }, { history: {} })
+
+// 或限制最多 50 步
+const store = createStore({ text: '' }, { history: { limit: 50 } })
 // store.useSnapshot() 返回 { value, history, undo, redo, isUndoEnabled, isRedoEnabled }
 ```
 
 **局部：**
 
 ```tsx
+// 不限制步数
+const [snap, store] = useStore(initialState, { history: {} })
+
+// 或限制最多 50 步
 const [snap, store] = useStore(initialState, { history: { limit: 50 } })
 // snap 上直接有 undo、redo、isUndoEnabled、isRedoEnabled
 ```
@@ -130,6 +138,15 @@ const set = createSet<number>([1, 2, 3])
 
 - **在线文档与 Demo**：运行本仓库根目录 `pnpm dev`，访问 `apps/valtio-offical` 提供的文档站。
 - **对比与设计**：见仓库根目录 `docs/improvements.md`、`docs/compare.md`。
+
+## 测试与覆盖率
+
+```bash
+bun test          # 运行测试
+bun test --coverage   # 运行测试并生成覆盖率（或 pnpm tc）
+```
+
+测试用例位于 `test/` 目录，按功能分文件：`enhanceStore.test.ts`、`createStore.test.ts`、`createStore.history.test.ts`、`createStore.derive.test.ts`、`collections.test.ts`、`subscribe.test.ts`、`persist.test.ts`、`useStore.test.tsx`。
 
 ## License
 
