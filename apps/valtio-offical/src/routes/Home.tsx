@@ -56,7 +56,7 @@ const advantages = [
 
 export function Home() {
   const [installTab, setInstallTab] = useState<InstallLabel>('pnpm')
-  const activeCmd = installCommands.find((c) => c.label === installTab)!
+  const activeCmd = installCommands.find(c => c.label === installTab)!
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
@@ -69,7 +69,9 @@ export function Home() {
           Valtio 的强大增强版 —— 更少样板代码，更高生产力
         </p>
         <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
-          基于 Valtio 的细粒度响应式机制，提供开箱即用的高级功能：历史回溯、自动派生、持久化、嵌套更新、克隆、重置等，让状态管理体验更接近 Zustand / Pinia，但完全保留 Valtio 的轻量与快照优势。
+          基于 Valtio
+          的细粒度响应式机制，提供开箱即用的高级功能：历史回溯、自动派生、持久化、嵌套更新、克隆、重置等，让状态管理体验更接近
+          Zustand / Pinia，但完全保留 Valtio 的轻量与快照优势。
         </p>
         <a
           href="#quick-start-heading"

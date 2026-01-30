@@ -10,15 +10,12 @@ interface PageWithDemoProps {
 /**
  * 代码与展示左右结构：大屏两列（左代码、右展示），移动端单列上下堆叠（代码在上、展示在下）
  */
-export function PageWithDemo({ children, demo }: PageWithDemoProps) {
+export function PageWithDemo({children, demo}: PageWithDemoProps) {
   return (
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-10 sm:pt-10 sm:pb-12">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10 lg:items-start">
         <div className="min-w-0">{children}</div>
-        <aside
-          className="shrink-0 lg:sticky lg:top-4"
-          aria-label="运行效果"
-        >
+        <aside className="shrink-0 lg:sticky lg:top-4" aria-label="运行效果">
           {demo}
         </aside>
       </div>

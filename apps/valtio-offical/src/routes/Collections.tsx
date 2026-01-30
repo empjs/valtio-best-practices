@@ -1,5 +1,4 @@
-import {useStore} from '@empjs/valtio'
-import {createMap, createSet} from '@empjs/valtio'
+import {createMap, createSet, useStore} from '@empjs/valtio'
 import {useMemo} from 'react'
 import {CodeBlock} from '../components/CodeBlock'
 import {PageWithDemo} from '../components/PageWithDemo'
@@ -25,7 +24,10 @@ const [snap, store] = useStore(() => ({
 
 export function Collections() {
   const [snap, store] = useStore(() => ({
-    map: createMap<string, number>([['a', 1], ['b', 2]]),
+    map: createMap<string, number>([
+      ['a', 1],
+      ['b', 2],
+    ]),
     tagSet: createSet<string>(['x']),
   }))
 
@@ -41,7 +43,9 @@ export function Collections() {
       aria-live="polite"
     >
       <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果</h3>
-      <p className="mb-1 text-slate-900 dark:text-slate-100">Map: {mapEntries.map(([k, v]) => `${k}=${v}`).join(', ')}</p>
+      <p className="mb-1 text-slate-900 dark:text-slate-100">
+        Map: {mapEntries.map(([k, v]) => `${k}=${v}`).join(', ')}
+      </p>
       <p className="mb-2 text-slate-900 dark:text-slate-100">Set: {setValues.join(', ')}</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => store.map.set('c', (snap.map.get('c') ?? 0) + 1)} className={btn}>
@@ -56,21 +60,15 @@ export function Collections() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">
-        collections
-      </h1>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">collections</h1>
       <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         createMap / createSet：可代理的 Map/Set，在 store 或组件内使用，增删改会触发订阅更新。
       </p>
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        如何导入
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">如何导入</h2>
       <CodeBlock code={codeImport} title="导入" />
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        用法示例
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">用法示例</h2>
       <CodeBlock code={codeUsage} title="createMap / createSet" />
     </PageWithDemo>
   )

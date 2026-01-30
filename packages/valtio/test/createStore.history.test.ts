@@ -1,24 +1,24 @@
-import { describe, expect, test } from 'bun:test'
-import { createStore, snapshot } from '../src/index'
+import {describe, expect, test} from 'bun:test'
+import {createStore, snapshot} from '../src/index'
 
 describe('createStore history', () => {
   test('options.history 返回带 value/undo/redo 的 store', () => {
-    const store = createStore({ count: 0 }, { history: { limit: 10 } })
-    const snap = snapshot(store) as { value: { count: number }; isUndoEnabled: boolean; isRedoEnabled: boolean }
-    expect(snap.value).toEqual({ count: 0 })
+    const store = createStore({count: 0}, {history: {limit: 10}})
+    const snap = snapshot(store) as {value: {count: number}; isUndoEnabled: boolean; isRedoEnabled: boolean}
+    expect(snap.value).toEqual({count: 0})
     expect(typeof store.undo).toBe('function')
     expect(typeof store.redo).toBe('function')
   })
 
   test('写 value 后 snapshot 更新', () => {
-    const store = createStore({ count: 0 }, { history: { limit: 10 } })
+    const store = createStore({count: 0}, {history: {limit: 10}})
     store.value.count = 1
-    const snap = snapshot(store) as { value: { count: number } }
+    const snap = snapshot(store) as {value: {count: number}}
     expect(snap.value.count).toBe(1)
   })
 
   test('undo 可调用且不抛错', () => {
-    const store = createStore({ count: 0 }, { history: { limit: 10 } })
+    const store = createStore({count: 0}, {history: {limit: 10}})
     store.value.count = 1
     store.value.count = 2
     expect(store.value.count).toBe(2)
@@ -27,23 +27,23 @@ describe('createStore history', () => {
   })
 
   test('redo 前进', () => {
-    const store = createStore({ count: 0 }, { history: { limit: 10 } })
+    const store = createStore({count: 0}, {history: {limit: 10}})
     store.value.count = 1
     store.undo()
     store.redo()
-    const snap = snapshot(store) as { value: { count: number } }
+    const snap = snapshot(store) as {value: {count: number}}
     expect(snap.value.count).toBe(1)
   })
 
   test('redo 可调用且不抛错', () => {
-    const store = createStore({ count: 0 }, { history: { limit: 10 } })
+    const store = createStore({count: 0}, {history: {limit: 10}})
     store.value.count = 1
     store.undo()
     expect(() => store.redo()).not.toThrow()
   })
 
   test('limit 生效：历史节点数不超过 limit+1', async () => {
-    const store = createStore({ count: 0 }, { history: { limit: 2 } })
+    const store = createStore({count: 0}, {history: {limit: 2}})
     store.value.count = 1
     store.value.count = 2
     store.value.count = 3

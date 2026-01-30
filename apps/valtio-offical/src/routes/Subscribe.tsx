@@ -1,5 +1,5 @@
 import {useStore} from '@empjs/valtio'
-import {useRef, useEffect, useState} from 'react'
+import {useEffect, useRef, useState} from 'react'
 import {CodeBlock} from '../components/CodeBlock'
 import {PageWithDemo} from '../components/PageWithDemo'
 
@@ -92,11 +92,10 @@ const codeWhen = `// subscribeKey / subscribeKeys：非 React 逻辑（持久化
 // 细粒度：大 store 时尽量每个组件只读自己需要的字段，无需手写 selector
 `
 
-const cardChip =
-  'rounded border border-gray-200 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-700/50'
+const cardChip = 'rounded border border-gray-200 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-700/50'
 
 /** 只读 count，用于演示细粒度：改 name 时此组件不重渲染 */
-function OnlyCount({store}: { store: ReturnType<typeof useStore>[1] }) {
+function OnlyCount({store}: {store: ReturnType<typeof useStore>[1]}) {
   const snap = store.useSnapshot()
   const renderCount = useRef(0)
   renderCount.current += 1
@@ -109,7 +108,7 @@ function OnlyCount({store}: { store: ReturnType<typeof useStore>[1] }) {
 }
 
 /** 只读 name，用于演示细粒度：改 count 时此组件不重渲染 */
-function OnlyName({store}: { store: ReturnType<typeof useStore>[1] }) {
+function OnlyName({store}: {store: ReturnType<typeof useStore>[1]}) {
   const snap = store.useSnapshot()
   const renderCount = useRef(0)
   renderCount.current += 1
@@ -122,12 +121,12 @@ function OnlyName({store}: { store: ReturnType<typeof useStore>[1] }) {
 }
 
 export function Subscribe() {
-  const [snap, store] = useStore(() => ({ count: 0, name: 'x' }))
+  const [snap, store] = useStore(() => ({count: 0, name: 'x'}))
   const [keyLog, setKeyLog] = useState('')
   const [keysLog, setKeysLog] = useState('')
 
   useEffect(() => {
-    const unsub = store.subscribeKey('count', (value) => {
+    const unsub = store.subscribeKey('count', value => {
       setKeyLog(prev => prev + `count=${value}\n`)
     })
     return unsub
@@ -150,19 +149,31 @@ export function Subscribe() {
     >
       <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果</h3>
 
-      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">细粒度订阅（只读 count / name，看渲染次数）</p>
+      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+        细粒度订阅（只读 count / name，看渲染次数）
+      </p>
       <div className="mb-3 flex flex-wrap gap-2">
         <OnlyCount store={store} />
         <OnlyName store={store} />
       </div>
 
-      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">subscribeKey(&apos;count&apos;) 日志</p>
-      <pre className="mb-3 max-h-20 overflow-auto rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400" aria-live="polite">
+      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+        subscribeKey(&apos;count&apos;) 日志
+      </p>
+      <pre
+        className="mb-3 max-h-20 overflow-auto rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400"
+        aria-live="polite"
+      >
         {keyLog || '—'}
       </pre>
 
-      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">subscribeKeys([&apos;count&apos;, &apos;name&apos;]) 日志</p>
-      <pre className="mb-3 max-h-20 overflow-auto rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400" aria-live="polite">
+      <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+        subscribeKeys([&apos;count&apos;, &apos;name&apos;]) 日志
+      </p>
+      <pre
+        className="mb-3 max-h-20 overflow-auto rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 dark:bg-slate-900 dark:text-slate-400"
+        aria-live="polite"
+      >
         {keysLog || '—'}
       </pre>
 
@@ -173,7 +184,16 @@ export function Subscribe() {
         <button type="button" onClick={() => store.set('name', snap.name === 'x' ? 'y' : 'x')} className={btn}>
           name 切换
         </button>
-        <button type="button" onClick={() => store.batch(s => { s.count = 0; s.name = 'reset' })} className={btn}>
+        <button
+          type="button"
+          onClick={() =>
+            store.batch(s => {
+              s.count = 0
+              s.name = 'reset'
+            })
+          }
+          className={btn}
+        >
           batch reset
         </button>
       </div>
@@ -182,21 +202,15 @@ export function Subscribe() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">
-        subscribe
-      </h1>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">subscribe</h1>
       <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         subscribeKey / subscribeKeys、batch、以及 useSnapshot 的细粒度订阅（只读用到的字段）。
       </p>
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        1. 如何导入
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">1. 如何导入</h2>
       <CodeBlock code={codeImport} title="导入与概念" />
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        2. subscribeKey：单 key 订阅
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">2. subscribeKey：单 key 订阅</h2>
       <CodeBlock code={codeSubscribeKey} title="subscribeKey" />
 
       <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
@@ -204,9 +218,7 @@ export function Subscribe() {
       </h2>
       <CodeBlock code={codeSubscribeKeys} title="subscribeKeys" />
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        4. batch：批量更新
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">4. batch：批量更新</h2>
       <CodeBlock code={codeBatch} title="batch" />
 
       <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
@@ -214,9 +226,7 @@ export function Subscribe() {
       </h2>
       <CodeBlock code={codeFineGrained} title="useSnapshot 按路径订阅" />
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        6. 何时用
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">6. 何时用</h2>
       <CodeBlock code={codeWhen} title="选用场景" />
     </PageWithDemo>
   )

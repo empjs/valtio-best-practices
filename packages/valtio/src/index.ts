@@ -219,20 +219,19 @@ export function enhanceStore<T extends object>(store: T, initialState?: T): T & 
 /** 带 derive 时的返回：base + derived（均含 useSnapshot，与普通 store 用法一致） */
 export interface StoreWithDerived<T extends object, D> {
   base: T & StoreBaseMethods<T>
-  derived: object & { useSnapshot(): D }
+  derived: object & {useSnapshot(): D}
 }
 
 function createStoreImpl<T extends object>(
   initialState: T,
   options?: CreateOptionsBase & {history?: WithHistoryOptions; derive?: DeriveFn<T, unknown>},
-): T & StoreBaseMethods<T> | HistoryStore<T> | StoreWithDerived<T, unknown> {
+): (T & StoreBaseMethods<T>) | HistoryStore<T> | StoreWithDerived<T, unknown> {
   const opts = options ?? {}
   if (opts.history != null) {
     const histOptions = opts.history as Record<string, unknown>
-    const hist = proxyWithHistory(
-      initialState,
-      { skipSubscribe: histOptions.skipSubscribe as boolean } as Parameters<typeof proxyWithHistory>[1],
-    ) as HistoryStoreWithSnapshot<T>
+    const hist = proxyWithHistory(initialState, {skipSubscribe: histOptions.skipSubscribe as boolean} as Parameters<
+      typeof proxyWithHistory
+    >[1]) as HistoryStoreWithSnapshot<T>
     hist.useSnapshot = function useSnapshotFromStore() {
       return useSnapshot(hist) as unknown as WithHistorySnapshot<T>
     }
@@ -257,7 +256,7 @@ function createStoreImpl<T extends object>(
   if (opts.derive != null) {
     const proxied = proxy(initialState) as T
     const baseStore = enhanceStore(proxied, initialState)
-    const derivedState = derive(opts.derive, {proxy: proxied}) as object & { useSnapshot?: () => unknown }
+    const derivedState = derive(opts.derive, {proxy: proxied}) as object & {useSnapshot?: () => unknown}
     derivedState.useSnapshot = function useSnapshotFromDerived() {
       return useSnapshot(derivedState)
     }
@@ -292,8 +291,11 @@ export function createStore<T extends object>(
 export function createStore<T extends object, D>(
   initialState: T,
   options?: CreateOptions<T, D>,
-): T & StoreBaseMethods<T> | HistoryStoreWithSnapshot<T> | StoreWithDerived<T, D> {
-  return createStoreImpl(initialState, options) as T & StoreBaseMethods<T> | HistoryStoreWithSnapshot<T> | StoreWithDerived<T, D>
+): (T & StoreBaseMethods<T>) | HistoryStoreWithSnapshot<T> | StoreWithDerived<T, D> {
+  return createStoreImpl(initialState, options) as
+    | (T & StoreBaseMethods<T>)
+    | HistoryStoreWithSnapshot<T>
+    | StoreWithDerived<T, D>
 }
 
 // ============================================
@@ -309,13 +311,15 @@ export interface UseStoreOptions<T = object, D = unknown> {
 function useStoreImpl<T extends object>(
   initialState: InitialStateOrFn<T>,
   options?: UseStoreOptions<T, unknown>,
-): [Snapshot<T> | WithHistorySnapshot<T>, T & StoreBaseMethods<T> | HistoryStore<T>, unknown?] {
+): [Snapshot<T> | WithHistorySnapshot<T>, (T & StoreBaseMethods<T>) | HistoryStore<T>, unknown?] {
   const opts = options ?? {}
   if (opts.history != null) {
     const histOptions = opts.history as Record<string, unknown>
     const store = useMemo(() => {
       const state = resolveInitialState(initialState)
-      return proxyWithHistory(state, { skipSubscribe: histOptions.skipSubscribe as boolean } as Parameters<typeof proxyWithHistory>[1])
+      return proxyWithHistory(state, {skipSubscribe: histOptions.skipSubscribe as boolean} as Parameters<
+        typeof proxyWithHistory
+      >[1])
     }, [])
     const limit = typeof histOptions.limit === 'number' && histOptions.limit > 0 ? histOptions.limit : 0
     useEffect(() => {
@@ -378,7 +382,10 @@ export function useStore<T extends object, D>(
 export function useStore<T extends object, D>(
   initialState: InitialStateOrFn<T>,
   options?: UseStoreOptions<T, D>,
-): [Snapshot<T>, T & StoreBaseMethods<T>] | [WithHistorySnapshot<T>, HistoryStore<T>] | [Snapshot<T>, T & StoreBaseMethods<T>, D] {
+):
+  | [Snapshot<T>, T & StoreBaseMethods<T>]
+  | [WithHistorySnapshot<T>, HistoryStore<T>]
+  | [Snapshot<T>, T & StoreBaseMethods<T>, D] {
   return useStoreImpl(initialState, options) as
     | [Snapshot<T>, T & StoreBaseMethods<T>]
     | [WithHistorySnapshot<T>, HistoryStore<T>]

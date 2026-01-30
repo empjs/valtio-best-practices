@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test'
-import { createMap, createSet, createStore } from '../src/index'
+import {describe, expect, test} from 'bun:test'
+import {createMap, createSet, createStore} from '../src/index'
 
 describe('createMap', () => {
   test('无参返回空 Map', () => {

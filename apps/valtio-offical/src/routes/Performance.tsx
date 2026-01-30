@@ -69,8 +69,8 @@ function List() {
 
 const INITIAL_COUNT = 500
 
-function genItems(start: number, count: number): { id: number; text: string; done: boolean }[] {
-  return Array.from({ length: count }, (_, i) => ({
+function genItems(start: number, count: number): {id: number; text: string; done: boolean}[] {
+  return Array.from({length: count}, (_, i) => ({
     id: start + i,
     text: `Item ${start + i}`,
     done: false,
@@ -86,7 +86,7 @@ export function Performance() {
     store.batch(s => {
       const start = s.items.length
       for (let i = 0; i < n; i++) {
-        s.items.push({ id: start + i, text: `Item ${start + i}`, done: false })
+        s.items.push({id: start + i, text: `Item ${start + i}`, done: false})
       }
     })
   }
@@ -99,7 +99,9 @@ export function Performance() {
 
   const toggleAll = (done: boolean) => {
     store.batch(s => {
-      s.items.forEach(item => { item.done = done })
+      s.items.forEach(item => {
+        item.done = done
+      })
     })
   }
 
@@ -135,13 +137,13 @@ export function Performance() {
       </div>
       <div
         className="max-h-80 overflow-auto rounded border border-gray-200 dark:border-slate-600"
-        style={{ contain: 'layout style' }}
+        style={{contain: 'layout style'}}
       >
         {snap.items.map(item => (
           <div
             key={item.id}
             className="flex items-center gap-2 border-b border-slate-100 px-2 py-1.5 dark:border-slate-700"
-            style={{ contentVisibility: 'auto' }}
+            style={{contentVisibility: 'auto'}}
           >
             <input
               type="checkbox"
@@ -160,21 +162,15 @@ export function Performance() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">
-        performance
-      </h1>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-[#4C1D95] dark:text-slate-100">performance</h1>
       <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         长列表场景：用 batch 做批量增删改、content-visibility 优化渲染；大量数据可配合虚拟列表（如 virtua）。
       </p>
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        1. 长列表 + batch 批量操作
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">1. 长列表 + batch 批量操作</h2>
       <CodeBlock code={codeLongList} title="批量添加 / 删除 / 全选" />
 
-      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">
-        2. 长列表渲染
-      </h2>
+      <h2 className="mb-2 mt-8 text-xl font-medium text-slate-800 dark:text-slate-200">2. 长列表渲染</h2>
       <CodeBlock code={codeRender} title="content-visibility 与虚拟列表" />
     </PageWithDemo>
   )

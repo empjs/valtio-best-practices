@@ -1,14 +1,7 @@
 import {useEffect, useState} from 'react'
 import {Route, Switch} from 'wouter'
 import {Nav, ThemeContext} from './components/Nav'
-import {
-  Collections,
-  CreateStore,
-  Home,
-  Performance,
-  Subscribe,
-  UseStore,
-} from './routes/index'
+import {Collections, CreateStore, Home, Performance, Subscribe, UseStore} from './routes/index'
 
 const THEME_KEY = 'valtio-theme'
 
@@ -28,8 +21,8 @@ const App = () => {
     localStorage.setItem(THEME_KEY, theme)
   }, [theme])
 
-  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
-  const themeValue = { isDark, onToggleTheme: toggleTheme }
+  const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
+  const themeValue = {isDark, onToggleTheme: toggleTheme}
 
   return (
     <ThemeContext.Provider value={themeValue}>
@@ -47,17 +40,17 @@ const App = () => {
           跳到主内容
         </a>
         <Nav />
-      <main id="main" className="pt-24">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/create-store" component={CreateStore} />
-          <Route path="/use-store" component={UseStore} />
-          <Route path="/collections" component={Collections} />
-          <Route path="/subscribe" component={Subscribe} />
-          <Route path="/performance" component={Performance} />
-        </Switch>
-      </main>
-    </div>
+        <main id="main" className="pt-24">
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/create-store" component={CreateStore} />
+            <Route path="/use-store" component={UseStore} />
+            <Route path="/collections" component={Collections} />
+            <Route path="/subscribe" component={Subscribe} />
+            <Route path="/performance" component={Performance} />
+          </Switch>
+        </main>
+      </div>
     </ThemeContext.Provider>
   )
 }
