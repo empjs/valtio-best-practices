@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import {describe, expect, test, beforeEach, afterEach, mock} from 'bun:test'
+import {afterEach, beforeEach, describe, expect, mock, test} from 'bun:test'
 import ValtioStore from '../src/index'
 
 const storageKey = 'valtio-store-test-persist'

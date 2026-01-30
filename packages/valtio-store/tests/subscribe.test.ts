@@ -43,7 +43,10 @@ describe('subscribe / subscribeKey / subscribeKeys', () => {
     await Promise.resolve()
     store.set('y', 2)
     await Promise.resolve()
-    expect(received).toEqual([['x', 1], ['y', 2]])
+    expect(received).toEqual([
+      ['x', 1],
+      ['y', 2],
+    ])
     unsub()
   })
 })

@@ -8,5 +8,6 @@ export default defineConfig(store => {
       port: 1111,
       open: false,
     },
+    cache: false,
   }
 })

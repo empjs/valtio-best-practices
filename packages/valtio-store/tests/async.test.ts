@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
-import {renderHook} from '@testing-library/react'
+
 import {describe, expect, test} from 'bun:test'
+import {renderHook} from '@testing-library/react'
 import ValtioStore from '../src/index'
 
 describe('createAsync / useAsync', () => {

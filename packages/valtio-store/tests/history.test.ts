@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
-import {renderHook} from '@testing-library/react'
+
 import {describe, expect, test} from 'bun:test'
+import {renderHook} from '@testing-library/react'
 import ValtioStore from '../src/index'
 
 describe('createWithHistory / useWithHistory', () => {
@@ -31,9 +32,7 @@ describe('createWithHistory / useWithHistory', () => {
   })
 
   test('useWithHistory 支持函数初始状态', () => {
-    const {result} = renderHook(() =>
-      ValtioStore.useWithHistory(() => ({count: 42})),
-    )
+    const {result} = renderHook(() => ValtioStore.useWithHistory(() => ({count: 42})))
     expect((result.current[0].value as {count: number}).count).toBe(42)
   })
 })

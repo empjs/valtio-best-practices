@@ -1,91 +1,91 @@
 @import "tailwindcss";
 
 @theme {
-    /* 自定义颜色 */
-    --color-primary: #3b82f6;
-    --color-primary-dark: #2563eb;
-    --color-success: #10b981;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
+	/* 自定义颜色 */
+	--color-primary: #3b82f6;
+	--color-primary-dark: #2563eb;
+	--color-success: #10b981;
+	--color-warning: #f59e0b;
+	--color-danger: #ef4444;
 
-    /* 自定义阴影 */
-    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	/* 自定义阴影 */
+	--shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+	--shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
 /* 全局样式 */
 body {
-    @apply bg-gray-50 text-gray-900;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-        sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+	@apply bg-gray-50 text-gray-900;
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+		"Helvetica Neue", sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 /* 自定义组件类 */
 @layer components {
-    .card {
-        @apply bg-white rounded-lg shadow-[--shadow-card] p-6;
-        transition: all 0.2s ease-in-out;
-    }
+	.card {
+		@apply bg-white rounded-lg shadow-[--shadow-card] p-6;
+		transition: all 0.2s ease-in-out;
+	}
 
-    .card:hover {
-        @apply shadow-[--shadow-card-hover];
-    }
+	.card:hover {
+		@apply shadow-[--shadow-card-hover];
+	}
 
-    .btn {
-        @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
-        @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
-    }
+	.btn {
+		@apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+		@apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+	}
 
-    .btn-primary {
-        @apply bg-[--color-primary] text-white;
-        @apply hover:bg-[--color-primary-dark];
-        @apply focus:ring-[--color-primary];
-    }
+	.btn-primary {
+		@apply bg-[--color-primary] text-white;
+		@apply hover:bg-[--color-primary-dark];
+		@apply focus:ring-[--color-primary];
+	}
 
-    .btn-success {
-        @apply bg-[--color-success] text-white;
-        @apply hover:bg-green-600;
-        @apply focus:ring-[--color-success];
-    }
+	.btn-success {
+		@apply bg-[--color-success] text-white;
+		@apply hover:bg-green-600;
+		@apply focus:ring-[--color-success];
+	}
 
-    .btn-danger {
-        @apply bg-[--color-danger] text-white;
-        @apply hover:bg-red-600;
-        @apply focus:ring-[--color-danger];
-    }
+	.btn-danger {
+		@apply bg-[--color-danger] text-white;
+		@apply hover:bg-red-600;
+		@apply focus:ring-[--color-danger];
+	}
 
-    .btn-secondary {
-        @apply bg-gray-200 text-gray-800;
-        @apply hover:bg-gray-300;
-        @apply focus:ring-gray-400;
-    }
+	.btn-secondary {
+		@apply bg-gray-200 text-gray-800;
+		@apply hover:bg-gray-300;
+		@apply focus:ring-gray-400;
+	}
 
-    .input {
-        @apply px-3 py-2 border border-gray-300 rounded-md;
-        @apply focus:outline-none focus:ring-2 focus:ring-[--color-primary] focus:border-transparent;
-        @apply transition-all duration-200;
-    }
+	.input {
+		@apply px-3 py-2 border border-gray-300 rounded-md;
+		@apply focus:outline-none focus:ring-2 focus:ring-[--color-primary] focus:border-transparent;
+		@apply transition-all duration-200;
+	}
 
-    .badge {
-        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-    }
+	.badge {
+		@apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+	}
 
-    .badge-success {
-        @apply bg-green-100 text-green-800;
-    }
+	.badge-success {
+		@apply bg-green-100 text-green-800;
+	}
 
-    .badge-warning {
-        @apply bg-yellow-100 text-yellow-800;
-    }
+	.badge-warning {
+		@apply bg-yellow-100 text-yellow-800;
+	}
 
-    .badge-danger {
-        @apply bg-red-100 text-red-800;
-    }
+	.badge-danger {
+		@apply bg-red-100 text-red-800;
+	}
 
-    .badge-info {
-        @apply bg-blue-100 text-blue-800;
-    }
+	.badge-info {
+		@apply bg-blue-100 text-blue-800;
+	}
 }

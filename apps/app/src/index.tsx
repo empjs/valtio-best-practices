@@ -1,12 +1,6 @@
+import './style.css'
 import {createRoot} from 'react-dom/client'
-
-const App = () => {
-  return (
-    <div>
-      <h1>Hello World</h1>
-    </div>
-  )
-}
+import App from './App'
 
 const dom = document.getElementById('emp-root')!
 const root = createRoot(dom)

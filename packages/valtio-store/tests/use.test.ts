@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
-import {renderHook} from '@testing-library/react'
+
 import {describe, expect, test} from 'bun:test'
+import {renderHook} from '@testing-library/react'
 import ValtioStore from '../src/index'
 
 describe('ValtioStore.use', () => {
@@ -8,7 +9,9 @@ describe('ValtioStore.use', () => {
     const {result} = renderHook(() => ValtioStore.use())
     const [snap] = result.current
     expect(snap && typeof snap === 'object' && !Array.isArray(snap)).toBe(true)
-    expect(Object.keys(snap as object).filter(k => typeof (snap as Record<string, unknown>)[k] !== 'function')).toEqual([])
+    expect(Object.keys(snap as object).filter(k => typeof (snap as Record<string, unknown>)[k] !== 'function')).toEqual(
+      [],
+    )
   })
 
   test('use(initialState) 使用传入状态', () => {

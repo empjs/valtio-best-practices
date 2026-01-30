@@ -31,6 +31,8 @@
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
+    "build:tsup": "tsup",
+    "dev:tsup": "tsup --watch",
     "test": "bun test",
     "tc": "bun test --coverage"
   },
@@ -40,7 +42,8 @@
     "@testing-library/react": "^16.1.0",
     "@types/bun": "latest",
     "@types/jsdom": "^27.0.0",
-    "jsdom": "^25.0.1"
+    "jsdom": "^25.0.1",
+    "tsup": "8.5.1"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

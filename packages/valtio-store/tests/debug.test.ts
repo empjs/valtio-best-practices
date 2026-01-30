@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import {describe, expect, test, mock} from 'bun:test'
+import {describe, expect, mock, test} from 'bun:test'
 import ValtioStore from '../src/index'
 
 describe('debug / getInitialState', () => {

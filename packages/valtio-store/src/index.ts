@@ -8,8 +8,8 @@ import {useMemo} from 'react'
 import type {Snapshot} from 'valtio'
 import {proxy, ref, snapshot, subscribe, useSnapshot} from 'valtio'
 import {devtools, proxyMap, proxySet, subscribeKey} from 'valtio/utils'
-import {proxyWithHistory} from 'valtio-history'
 import type {History} from 'valtio-history'
+import {proxyWithHistory} from 'valtio-history'
 
 // ============================================
 // 类型定义
@@ -26,9 +26,14 @@ export interface WithHistorySnapshot<T extends Record<string, unknown>> {
 }
 
 /** createWithHistory / useWithHistory 返回的 store 类型（value 可写，含 undo/redo） */
-export type StoreWithHistory<T extends Record<string, unknown>> = ReturnType<
-  typeof proxyWithHistory<ValtioStore & T>
->
+export type StoreWithHistory<T extends Record<string, unknown>> = ReturnType<typeof proxyWithHistory<ValtioStore & T>>
+
+/** 历史记录选项：在 valtio-history 基础上扩展 limit 等，业务传参无需类型声明 */
+export type WithHistoryOptions = Parameters<typeof proxyWithHistory>[1] extends infer O
+  ? O extends Record<string, unknown>
+    ? O & {limit?: number}
+    : {limit?: number}
+  : {limit?: number}
 
 /** 创建 Store 时的可选配置（如是否开启 devtools、显示名称） */
 export interface CreateOptions {
@@ -46,16 +51,22 @@ export type DeriveFn<TProxy, TDerived> = (get: (proxy: TProxy) => Snapshot<TProx
 export interface AsyncStoreState<T = Record<string, unknown>> {
   _loading?: Record<string, boolean>
   _error?: Record<string, unknown>
-  [key: string]: unknown
+  /**
+   * 允许动态添加属性（如 async 方法生成的函数），使用 any 以避免业务代码中频繁转型
+   */
+  [key: string]: any
 }
 
-/** 带 async(key, fn) 方法的 Store：用于包装异步方法并自动维护 _loading/_error */
-export interface AsyncStoreWithMethods<T = Record<string, unknown>> extends ValtioStore, AsyncStoreState<T> {
+/** 带 async(key, fn) 方法的 Store：用于包装异步方法并自动维护 _loading/_error；callback 的 this 由库推断，业务无需声明 */
+export interface AsyncStoreWithMethods<S extends ValtioStore = ValtioStore> extends ValtioStore, AsyncStoreState {
   async<K extends string>(
     key: K,
-    asyncFn: (...args: unknown[]) => Promise<unknown>,
+    asyncFn: (this: S, ...args: unknown[]) => Promise<unknown>,
   ): (...args: unknown[]) => Promise<unknown>
 }
+
+/** useAsync/createAsync 返回的 store：含 [key: string]: any 以便业务可挂载 store.async(key, fn) 的返回值并调用，无需类型声明 */
+export type AsyncStoreInstance<S extends ValtioStore> = S & AsyncStoreWithMethods<S> & {[key: string]: any}
 
 /** 取消订阅：subscribe / subscribeKey 等返回的函数，调用即取消监听 */
 export type Unsubscribe = () => void
@@ -111,19 +122,25 @@ class ValtioStore {
    * 创建全局单例 Store，所有组件共享同一份状态。
    * 先 bindProxyMethods 再 devtools，避免 devtools 序列化时触发 "Please use proxy object"。
    */
-  static createGlobal<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialState: T = {} as T,
+  /**
+   * 创建全局单例 Store，所有组件共享同一份状态。
+   * 先 bindProxyMethods 再 devtools，避免 devtools 序列化时触发 "Please use proxy object"。
+   */
+  static createGlobal<S extends ValtioStore>(
+    this: new () => S,
+    initialState?: Partial<S>,
     options: CreateOptions = {
       devtools: true,
     },
-  ): ValtioStore & T {
-    const instance = new (ValtioStore as typeof ValtioStore)()
-    Object.assign(instance, initialState)
-    const proxied = proxy(instance) as ValtioStore & T
+  ): S {
+    // biome-ignore lint/complexity/noThisInStatic: subclass ctor required (e.g. CounterStore)
+    const instance = new (this as unknown as new () => S)()
+    if (initialState) Object.assign(instance, initialState)
+    const proxied = proxy(instance) as S
     const bound = bindProxyMethods(proxied)
 
     if (process.env.NODE_ENV === 'development' && options.devtools !== false) {
-      devtools(bound, {name: options.name ?? (ValtioStore as typeof ValtioStore).name + ' (Global)'})
+      devtools(bound, {name: options.name ?? instance.constructor.name + ' (Global)'})
     }
 
     return bound
@@ -132,13 +149,11 @@ class ValtioStore {
   /**
    * 创建局部实例，每次调用都返回新的 proxy，适合单次使用或 createWithDerived 等内部用。
    */
-  static create<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialState: T = {} as T,
-    _options: CreateOptions = {},
-  ): ValtioStore & T {
-    const instance = new (ValtioStore as typeof ValtioStore)()
-    Object.assign(instance, initialState)
-    const proxied = proxy(instance) as ValtioStore & T
+  static create<S extends ValtioStore>(this: new () => S, initialState?: Partial<S>, _options: CreateOptions = {}): S {
+    // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
+    const instance = new (this as unknown as new () => S)()
+    if (initialState) Object.assign(instance, initialState)
+    const proxied = proxy(instance) as S
     return bindProxyMethods(proxied)
   }
 
@@ -147,21 +162,24 @@ class ValtioStore {
    * - use()、use(initialState)、use(() => state) → 局部 store，每组件独立，内部用 new this() 创建子类实例。
    * - use(globalStore) → 直接使用传入的 store（全局），通过 getSnapshot 存在判断是否为 store。
    */
-  static use<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialStateOrStore?: InitialStateOrFn<T> | (ValtioStore & Record<string, unknown>),
-  ): [Snapshot<ValtioStore & T>, ValtioStore & T] {
+  static use<S extends ValtioStore>(
+    this: new () => S,
+    initialStateOrStore?: InitialStateOrFn<Partial<S>> | S,
+  ): [Snapshot<S>, S] {
     const store = useMemo(() => {
       const arg = initialStateOrStore
       const isStore =
         arg && typeof arg === 'object' && typeof (arg as {getSnapshot?: unknown}).getSnapshot === 'function'
-      if (isStore) return arg as ValtioStore & T
-      const instance = new (this as typeof ValtioStore)()
-      const initial = typeof arg === 'function' ? (arg as () => T)() : (arg ?? (instance.getInitialState() as T))
+      if (isStore) return arg as S
+      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required (e.g. CounterStore)
+      const instance = new (this as unknown as new () => S)()
+      const initial =
+        typeof arg === 'function' ? (arg as () => Partial<S>)() : (arg ?? (instance.getInitialState() as Partial<S>))
       Object.assign(instance, initial)
-      return bindProxyMethods(proxy(instance) as ValtioStore & T)
+      return bindProxyMethods(proxy(instance) as S)
     }, [])
 
-    const snap = useSnapshot(store)
+    const snap = useSnapshot(store) as Snapshot<S>
     return [snap, store]
   }
 
@@ -172,33 +190,43 @@ class ValtioStore {
   /**
    * 创建带撤销/重做历史的 store（valtio-history），返回 { value, history, undo, redo } 形态。
    */
-  static createWithHistory<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialState: T = {} as T,
-    options: Parameters<typeof proxyWithHistory>[1] = {},
-  ): StoreWithHistory<T> {
-    const instance = new (ValtioStore as typeof ValtioStore)()
-    Object.assign(instance, initialState)
-    return proxyWithHistory(instance, options) as unknown as StoreWithHistory<T>
+  static createWithHistory<S extends ValtioStore>(
+    this: new () => S,
+    initialState?: Partial<S>,
+    options: WithHistoryOptions = {},
+  ): StoreWithHistory<S> {
+    // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
+    const instance = new (this as unknown as new () => S)()
+    if (initialState) Object.assign(instance, initialState)
+    return proxyWithHistory(
+      instance,
+      options as Parameters<typeof proxyWithHistory>[1],
+    ) as unknown as StoreWithHistory<S>
   }
 
   /**
    * React Hook - 局部 store + 历史记录，返回 [snap, store]，snap 含 value / history，store 含 value、undo、redo。
    */
-  static useWithHistory<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialState?: InitialStateOrFn<T>,
-    options: Parameters<typeof proxyWithHistory>[1] = {},
-  ): [WithHistorySnapshot<T>, StoreWithHistory<T>] {
+  static useWithHistory<S extends ValtioStore>(
+    this: new () => S,
+    initialState?: InitialStateOrFn<Partial<S>>,
+    options: WithHistoryOptions = {},
+  ): [WithHistorySnapshot<S>, StoreWithHistory<S>] {
     const store = useMemo(() => {
-      const instance = new (ValtioStore as typeof ValtioStore)()
+      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
+      const instance = new (this as unknown as new () => S)()
       const initial =
         typeof initialState === 'function'
-          ? (initialState as () => T)()
-          : (initialState ?? (instance.getInitialState() as T))
+          ? (initialState as () => Partial<S>)()
+          : (initialState ?? (instance.getInitialState() as Partial<S>))
       Object.assign(instance, initial)
-      return proxyWithHistory(instance, options) as unknown as StoreWithHistory<T>
+      return proxyWithHistory(
+        instance,
+        options as Parameters<typeof proxyWithHistory>[1],
+      ) as unknown as StoreWithHistory<S>
     }, [])
 
-    const snap = useSnapshot(store) as unknown as WithHistorySnapshot<T>
+    const snap = useSnapshot(store) as unknown as WithHistorySnapshot<S>
     return [snap, store]
   }
 
@@ -206,12 +234,14 @@ class ValtioStore {
    * 创建带派生状态的 store：base 为可写状态，derived 由 deriveFn(get) 计算，只读。
    * 返回 { base, derived }，通常配合 useSnapshot(base) / useSnapshot(derived) 使用。
    */
-  static createWithDerived<TBase extends Record<string, unknown>, TDerived>(
-    initialState: TBase,
-    deriveFn: DeriveFn<ValtioStore & TBase, TDerived>,
+  static createWithDerived<S extends ValtioStore, TDerived>(
+    this: new () => S,
+    initialState: Partial<S>,
+    deriveFn: DeriveFn<S, TDerived>,
   ) {
-    const baseStore = (ValtioStore as typeof ValtioStore).create(initialState)
-    type GetSnapshot = (store: ValtioStore & TBase) => Snapshot<ValtioStore & TBase>
+    // biome-ignore lint/complexity/noThisInStatic: intentional: subclass ctor for create()
+    const baseStore = (this as any).create(initialState) as S
+    type GetSnapshot = (store: S) => Snapshot<S>
     const derivedState = derive((get: GetSnapshot) => deriveFn(get, baseStore), {proxy: baseStore})
 
     return {
@@ -223,27 +253,29 @@ class ValtioStore {
   /**
    * React Hook - 局部 store + 派生状态，返回 [baseSnap, baseStore, derivedSnap]，derived 由 deriveFn 根据 base 计算。
    */
-  static useWithDerived<TBase extends Record<string, unknown>, TDerived>(
-    initialState: InitialStateOrFn<TBase> | undefined,
-    deriveFn: DeriveFn<ValtioStore & TBase, TDerived>,
+  static useWithDerived<S extends ValtioStore, TDerived>(
+    this: new () => S,
+    initialState: InitialStateOrFn<Partial<S>> | undefined,
+    deriveFn: DeriveFn<S, TDerived>,
   ) {
     const config = useMemo(() => {
-      const instance = new (ValtioStore as typeof ValtioStore)()
+      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required
+      const instance = new (this as unknown as new () => S)()
       const initial =
         typeof initialState === 'function'
-          ? (initialState as () => TBase)()
-          : (initialState ?? (instance.getInitialState() as TBase))
+          ? (initialState as () => Partial<S>)()
+          : (initialState ?? (instance.getInitialState() as Partial<S>))
       Object.assign(instance, initial)
-      const baseStore = bindProxyMethods(proxy(instance) as ValtioStore & TBase)
+      const baseStore = bindProxyMethods(proxy(instance) as S)
       const derivedState = derive(deriveFn, {proxy: baseStore})
 
       return {base: baseStore, derived: derivedState}
     }, [])
 
-    const baseSnap = useSnapshot(config.base)
+    const baseSnap = useSnapshot(config.base) as Snapshot<S>
     const derivedSnap = useSnapshot(config.derived)
 
-    return [baseSnap, config.base, derivedSnap]
+    return [baseSnap, config.base, derivedSnap] as [Snapshot<S>, S, TDerived]
   }
 
   /**
@@ -302,7 +334,7 @@ class ValtioStore {
     const target = keys.reduce(
       (obj: Record<string, unknown>, k: string) => obj[k] as Record<string, unknown>,
       this as unknown as Record<string, unknown>,
-    )
+    ) as any
     target[lastKey] = value
   }
 
@@ -333,10 +365,10 @@ class ValtioStore {
   }
 
   /** 深拷贝当前快照并生成新的 store 实例（同子类）。 */
-  clone(): ValtioStore & Record<string, unknown> {
+  clone(): this {
     const snap = this.getSnapshot()
     const cloned = JSON.parse(JSON.stringify(snap)) as Record<string, unknown>
-    return (this.constructor as typeof ValtioStore).create(cloned)
+    return (this.constructor as any).create(cloned) as this
   }
 
   /** 转为纯数据对象（去掉方法），供 JSON.stringify 或持久化使用；实际调用处多用 bindProxyMethods 重写版。 */
@@ -403,18 +435,16 @@ class ValtioStore {
    * 创建带 _loading / _error 的异步 Store，并挂载 async(key, asyncFn) 方法。
    * 调用 store.async('fetchUser', fn) 会返回一个包装函数，执行时自动设 _loading[key]、_error[key]。
    */
-  static createAsync<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialState: T = {} as T,
-  ): AsyncStoreWithMethods<T> {
-    const enhanced: AsyncStoreState<T> = {
+  static createAsync<S extends ValtioStore>(this: new () => S, initialState?: Partial<S>): AsyncStoreInstance<S> {
+    const enhanced: AsyncStoreState = {
       ...initialState,
       _loading: {},
       _error: {},
     }
 
-    const instance = (ValtioStore as typeof ValtioStore).create(
-      enhanced as Record<string, unknown>,
-    ) as AsyncStoreWithMethods<T>
+    // Must use subclass constructor (e.g. UserStore), not ValtioStore — otherwise instance has no subclass methods
+    // biome-ignore lint/complexity/noThisInStatic: intentional: this is the subclass ctor for create()
+    const instance = (this as any).create(enhanced as unknown as Record<string, unknown>) as AsyncStoreInstance<S>
 
     instance.async = function (key: string, asyncFn: (...args: unknown[]) => Promise<unknown>) {
       return async (...args: unknown[]) => {
@@ -441,21 +471,24 @@ class ValtioStore {
   /**
    * React Hook - 局部异步 Store，用法同 createAsync，适合组件内独立请求（如按 id 拉用户）。
    */
-  static useAsync<T extends Record<string, unknown> = Record<string, unknown>>(
-    initialState?: InitialStateOrFn<T>,
-  ): [Snapshot<AsyncStoreWithMethods<T>>, AsyncStoreWithMethods<T>] {
+  static useAsync<S extends ValtioStore>(
+    this: new () => S,
+    initialState?: InitialStateOrFn<Partial<S>>,
+  ): [Snapshot<AsyncStoreInstance<S>>, AsyncStoreInstance<S>] {
     const store = useMemo(() => {
-      const initial = typeof initialState === 'function' ? (initialState as () => T)() : ((initialState ?? {}) as T)
+      const initial =
+        typeof initialState === 'function' ? (initialState as () => Partial<S>)() : ((initialState ?? {}) as Partial<S>)
 
-      const enhanced: AsyncStoreState<T> = {
+      const enhanced: AsyncStoreState = {
         ...initial,
         _loading: {},
         _error: {},
       }
 
-      const instance = new (ValtioStore as typeof ValtioStore)()
+      // biome-ignore lint/complexity/noThisInStatic: subclass ctor required (e.g. UserStore)
+      const instance = new (this as unknown as new () => S)()
       Object.assign(instance, enhanced)
-      const proxied = proxy(instance) as AsyncStoreWithMethods<T>
+      const proxied = proxy(instance) as AsyncStoreInstance<S>
 
       proxied.async = function (key: string, asyncFn: (...args: unknown[]) => Promise<unknown>) {
         return async (...args: unknown[]) => {
