@@ -6,8 +6,7 @@ import {useStoreSnippet} from './snippets'
 const btn =
   'cursor-pointer rounded border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
 
-const cardInner =
-  'rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
+const cardInner = 'rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
 
 /** 每个实例内部 useStore，拥有独立 count，互不影响 */
 function LocalCounterBlock({label}: {label: string}) {
@@ -195,10 +194,12 @@ export function UseStore() {
     <PageWithDemo demo={demo}>
       <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">useStore</h1>
       <p className="mb-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
-        在组件内创建局部 store，返回 [snap, store]。支持常规、带历史、带派生；异步请求用常规 store + 手动 loading/error。
+        在组件内创建局部 store，返回 [snap, store]。支持常规、带历史、带派生；异步请求用常规 store + 手动
+        loading/error。
       </p>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-        签名：useStore(initialState, options?) → [snap, store] 或 [baseSnap, baseStore, derivedSnap]（options.derive 时）
+        签名：useStore(initialState, options?) → [snap, store] 或 [baseSnap, baseStore, derivedSnap]（options.derive
+        时）
       </p>
 
       <CodeBlock code={useStoreSnippet} title="完整示例（常规 → 何时用 → 历史 → 派生 → 异步，含调用闭环与中文提示）" />

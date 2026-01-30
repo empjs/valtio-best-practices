@@ -1,0 +1,6 @@
+# Cloudflare Pages 配置
+# 首次部署前: npx wrangler login
+# 若项目不存在: npx wrangler pages project create valtio-best-practices --production-branch=main
+
+name = "valtio-best-practices"
+pages_build_output_dir = "dist"

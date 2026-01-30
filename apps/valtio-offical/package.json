@@ -10,7 +10,8 @@
     "start": "emp serve",
     "stat": "emp build --analyze",
     "bd": "emp build --doctor",
-    "emp": "emp"
+    "emp": "emp",
+    "deploy": "pnpm build && wrangler pages deploy dist --project-name=valtio-best-practices"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "wouter": "^3.9.0"
   },
   "devDependencies": {
-    "@empjs/plugin-tailwindcss": "^1.2.7"
+    "@empjs/plugin-tailwindcss": "^1.2.7",
+    "wrangler": "^4"
   }
 }

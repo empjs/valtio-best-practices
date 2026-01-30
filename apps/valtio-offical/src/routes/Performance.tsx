@@ -103,7 +103,10 @@ export function Performance() {
         长列表场景：用 batch 做批量增删改、content-visibility 优化渲染；大量数据可配合虚拟列表（如 virtua）。
       </p>
 
-      <CodeBlock code={performanceSnippet} title="完整示例（batch 批量增删/全选 → content-visibility 渲染，含调用闭环与中文提示）" />
+      <CodeBlock
+        code={performanceSnippet}
+        title="完整示例（batch 批量增删/全选 → content-visibility 渲染，含调用闭环与中文提示）"
+      />
     </PageWithDemo>
   )
 }

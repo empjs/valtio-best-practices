@@ -39,8 +39,7 @@ const asyncStore = createStore(
 const btn =
   'cursor-pointer rounded border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-800 transition-colors duration-200 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
 
-const cardInner =
-  'rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
+const cardInner = 'rounded-lg border border-gray-200 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
 
 /** 单个展示块：读同一全局 store，任意一处 +1 会同步到所有实例 */
 function GlobalCounterBlock({label}: {label: string}) {
@@ -49,7 +48,7 @@ function GlobalCounterBlock({label}: {label: string}) {
     <div className={cardInner}>
       <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mb-2 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.count}</p>
-        <button
+      <button
         type="button"
         onClick={() => demoStore.set('count', snap.count + 1)}
         className="cursor-pointer rounded border border-gray-200 bg-white px-2.5 py-1 text-sm font-medium text-slate-800 transition-colors duration-200 hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
@@ -218,10 +217,14 @@ export function CreateStore() {
         创建全局 store，单例跨组件共享。支持常规、带历史、带派生；异步请求用常规 store + 手动 loading/error。
       </p>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
-        签名：createStore(initialState, options?) → store 或 &#123; base, derived &#125;（options 含 history 或 derive 时）
+        签名：createStore(initialState, options?) → store 或 &#123; base, derived &#125;（options 含 history 或 derive
+        时）
       </p>
 
-      <CodeBlock code={createStoreSnippet} title="完整示例（导入 → 定义 → 读/写 → 历史 → 派生 → 异步，含调用闭环与中文提示）" />
+      <CodeBlock
+        code={createStoreSnippet}
+        title="完整示例（导入 → 定义 → 读/写 → 历史 → 派生 → 异步，含调用闭环与中文提示）"
+      />
     </PageWithDemo>
   )
 }
