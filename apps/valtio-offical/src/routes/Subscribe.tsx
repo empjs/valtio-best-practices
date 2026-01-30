@@ -92,13 +92,16 @@ const codeWhen = `// subscribeKey / subscribeKeys：非 React 逻辑（持久化
 // 细粒度：大 store 时尽量每个组件只读自己需要的字段，无需手写 selector
 `
 
+const cardChip =
+  'rounded border border-violet-200/50 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-700/50'
+
 /** 只读 count，用于演示细粒度：改 name 时此组件不重渲染 */
 function OnlyCount({store}: { store: ReturnType<typeof useStore>[1] }) {
   const snap = store.useSnapshot()
   const renderCount = useRef(0)
   renderCount.current += 1
   return (
-    <div className="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-slate-600 dark:bg-slate-700/50">
+    <div className={cardChip}>
       <span className="tabular-nums text-slate-900 dark:text-slate-100">count: {snap.count}</span>
       <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">渲染 #{renderCount.current}</span>
     </div>
@@ -111,7 +114,7 @@ function OnlyName({store}: { store: ReturnType<typeof useStore>[1] }) {
   const renderCount = useRef(0)
   renderCount.current += 1
   return (
-    <div className="rounded border border-slate-200 bg-slate-50 px-2 py-1 dark:border-slate-600 dark:bg-slate-700/50">
+    <div className={cardChip}>
       <span className="text-slate-900 dark:text-slate-100">name: {snap.name}</span>
       <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">渲染 #{renderCount.current}</span>
     </div>
@@ -137,9 +140,12 @@ export function Subscribe() {
     return unsub
   }, [store])
 
+  const btn =
+    'cursor-pointer rounded border border-violet-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 hover:border-violet-400 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+
   const demo = (
     <section
-      className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
+      className="rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       aria-live="polite"
     >
       <h3 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果</h3>
@@ -161,25 +167,13 @@ export function Subscribe() {
       </pre>
 
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => store.set('count', snap.count + 1)}
-          className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
-        >
+        <button type="button" onClick={() => store.set('count', snap.count + 1)} className={btn}>
           count+1
         </button>
-        <button
-          type="button"
-          onClick={() => store.set('name', snap.name === 'x' ? 'y' : 'x')}
-          className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
-        >
+        <button type="button" onClick={() => store.set('name', snap.name === 'x' ? 'y' : 'x')} className={btn}>
           name 切换
         </button>
-        <button
-          type="button"
-          onClick={() => store.batch(s => { s.count = 0; s.name = 'reset' })}
-          className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
-        >
+        <button type="button" onClick={() => store.batch(s => { s.count = 0; s.name = 'reset' })} className={btn}>
           batch reset
         </button>
       </div>
@@ -188,7 +182,7 @@ export function Subscribe() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">
         subscribe
       </h1>
       <p className="mb-6 text-slate-600 dark:text-slate-400">

@@ -12,7 +12,7 @@ interface PageWithDemoProps {
  */
 export function PageWithDemo({ children, demo }: PageWithDemoProps) {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+    <main className="mx-auto max-w-6xl px-4 pt-6 pb-8 sm:pt-8 sm:pb-10">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 lg:items-start">
         <div className="min-w-0">{children}</div>
         <aside

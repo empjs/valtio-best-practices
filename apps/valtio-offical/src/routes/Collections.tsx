@@ -32,27 +32,22 @@ export function Collections() {
   const mapEntries = useMemo(() => Array.from(snap.map.entries()), [snap.map])
   const setValues = useMemo(() => Array.from(snap.tagSet), [snap.tagSet])
 
+  const btn =
+    'cursor-pointer rounded border border-violet-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 hover:border-violet-400 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+
   const demo = (
     <section
-      className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
+      className="rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       aria-live="polite"
     >
       <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">运行效果</h3>
       <p className="mb-1 text-slate-900 dark:text-slate-100">Map: {mapEntries.map(([k, v]) => `${k}=${v}`).join(', ')}</p>
       <p className="mb-2 text-slate-900 dark:text-slate-100">Set: {setValues.join(', ')}</p>
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => store.map.set('c', (snap.map.get('c') ?? 0) + 1)}
-          className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
-        >
+        <button type="button" onClick={() => store.map.set('c', (snap.map.get('c') ?? 0) + 1)} className={btn}>
           map.set('c', n+1)
         </button>
-        <button
-          type="button"
-          onClick={() => store.tagSet.add('y')}
-          className="rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
-        >
+        <button type="button" onClick={() => store.tagSet.add('y')} className={btn}>
           tagSet.add('y')
         </button>
       </div>
@@ -61,7 +56,7 @@ export function Collections() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">
         collections
       </h1>
       <p className="mb-6 text-slate-600 dark:text-slate-400">

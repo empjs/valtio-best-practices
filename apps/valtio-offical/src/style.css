@@ -1,4 +1,20 @@
 @import "tailwindcss";
 
+/* 设计系统：Minimalism & Swiss — Primary #7C3AED, Background #FAF5FF, Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
 /* 手动切换暗色：在根节点加 .dark 时应用 dark: 样式 */
 @custom-variant dark (&&:where(.dark, .dark *));
+
+/* 尊重用户减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

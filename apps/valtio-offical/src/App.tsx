@@ -11,10 +11,10 @@ import {
 
 const App = () => {
   return (
-    <div className="min-h-screen bg-slate-50 transition-colors dark:bg-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-[#FAF5FF] transition-colors dark:bg-slate-900 dark:text-slate-100">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:ring-2 focus:ring-slate-400 dark:focus:bg-slate-800 dark:focus:ring-slate-500"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:ring-2 focus:ring-violet-500 dark:focus:bg-slate-800 dark:focus:ring-violet-400"
       >
         跳到主内容
       </a>

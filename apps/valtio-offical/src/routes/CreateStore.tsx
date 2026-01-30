@@ -68,17 +68,23 @@ const asyncStore = createStore(
   {name: 'AsyncStore'},
 )
 
+const btn =
+  'cursor-pointer rounded border border-violet-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 hover:border-violet-400 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
+
+const cardInner =
+  'rounded-lg border border-violet-200/50 bg-white p-3 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
+
 /** 单个展示块：读同一全局 store，任意一处 +1 会同步到所有实例 */
 function GlobalCounterBlock({label}: {label: string}) {
   const snap = demoStore.useSnapshot()
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-700/50">
+    <div className={cardInner}>
       <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mb-2 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.count}</p>
       <button
         type="button"
         onClick={() => demoStore.set('count', snap.count + 1)}
-        className="rounded border border-slate-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
+        className="cursor-pointer rounded border border-violet-300 bg-white px-2.5 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:bg-violet-50 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900"
       >
         +1
       </button>
@@ -86,14 +92,11 @@ function GlobalCounterBlock({label}: {label: string}) {
   )
 }
 
-const btn =
-  'rounded border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 dark:focus-visible:ring-offset-slate-900'
-
 /** 带历史的 createStore demo：读 snap.value，写 store.value，undo/redo */
 function HistoryDemoBlock() {
   const snap = historyStore.useSnapshot()
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-700/50">
+    <div className={cardInner}>
       <p className="mb-2 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.value.count}</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => (historyStore.value.count = snap.value.count + 1)} className={btn}>
@@ -127,7 +130,7 @@ function DerivedDemoBlock() {
   const baseSnap = derivedStore.base.useSnapshot()
   const derivedSnap = derivedStore.derived.useSnapshot()
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-700/50">
+    <div className={cardInner}>
       <p className="mb-1 tabular-nums text-slate-900 dark:text-slate-100">
         base: a={baseSnap.a}, b={baseSnap.b}
       </p>
@@ -151,7 +154,7 @@ function AsyncDemoBlock() {
       </p>
     )
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-700/50">
+    <div className={cardInner}>
       <p className="mb-2 text-slate-900 dark:text-slate-100">{snap.user ? `user: ${snap.user.name}` : '未加载'}</p>
       <button type="button" onClick={() => asyncStore.loadUser()} className={btn}>
         {snap.user ? '重新加载' : '加载用户'}
@@ -194,7 +197,7 @@ const store = createStore({
 export function CreateStore() {
   const demo = (
     <section
-      className="space-y-6 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800"
+      className="space-y-6 rounded-xl border border-violet-200/50 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
       aria-live="polite"
     >
       <div>
@@ -231,7 +234,7 @@ export function CreateStore() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">createStore</h1>
+      <h1 className="mb-2 text-2xl font-semibold text-[#4C1D95] dark:text-slate-100">createStore</h1>
       <p className="mb-6 text-slate-600 dark:text-slate-400">
         创建全局 store，单例跨组件共享。支持常规、带历史、带派生；异步请求用常规 store + 手动 loading/error。
       </p>
