@@ -2,7 +2,8 @@
   "extends": "@empjs/cli/emp-tsconfig.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "types": ["bun"]
+    "types": ["bun"],
+    "resolveJsonModule": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "test", "**/*.test.ts"]

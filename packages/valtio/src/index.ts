@@ -5,6 +5,12 @@ import {proxy, ref, snapshot, subscribe, useSnapshot} from 'valtio'
 import {deepClone, devtools, proxyMap, proxySet, subscribeKey} from 'valtio/utils'
 import type {History} from 'valtio-history'
 import {proxyWithHistory} from 'valtio-history'
+import pkg from '../package.json'
+
+// ============================================
+// 版本号导出
+// ============================================
+export const version = pkg.version
 
 // ============================================
 // 类型定义

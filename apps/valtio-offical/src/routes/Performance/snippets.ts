@@ -1,3 +1,5 @@
+import type {Locale} from 'src/i18n/translations'
+
 /**
  * performance 完整示例：长列表 + batch 批量操作 + content-visibility
  * 调用闭环：useStore 存 items → 批量增删用 batch 合并写、只触发一次通知 → 列表用 snap.items 渲染 → 每行 content-visibility: auto 或虚拟列表减少重排
@@ -103,3 +105,7 @@ function List() {
   )
 }
 `
+
+export function getPerformanceSnippet(locale: Locale) {
+  return locale === 'zh' ? performanceSnippet : performanceSnippetEn
+}

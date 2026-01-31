@@ -1,8 +1,8 @@
 import {useStore} from '@empjs/valtio'
-import {CodeBlock} from '../components/CodeBlock'
-import {PageWithDemo} from '../components/PageWithDemo'
-import {useT} from '../i18n'
-import {localeStore} from '../stores/localeStore'
+import {CodeBlock} from 'src/components/CodeBlock'
+import {PageWithDemo} from 'src/components/PageWithDemo'
+import {useT} from 'src/i18n'
+import {localeStore} from 'src/stores/localeStore'
 import {getPerformanceSnippet} from './snippets'
 
 const INITIAL_COUNT = 500
@@ -15,7 +15,7 @@ function genItems(start: number, count: number): {id: number; text: string; done
   }))
 }
 
-export function Performance() {
+export function PerformancePage() {
   const t = useT()
   const locale = localeStore.useSnapshot().locale
   const [snap, store] = useStore(() => ({
@@ -53,7 +53,7 @@ export function Performance() {
   const allDone = snap.items.length > 0 && snap.items.every(item => item.done)
 
   const btn =
-    'cursor-pointer rounded border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700 dark:focus-visible:ring-offset-slate-900'
+    'cursor-pointer whitespace-nowrap rounded border border-transparent bg-blue-600 px-2 py-1 text-xs font-medium text-white transition-colors duration-200 hover:bg-blue-700 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700 dark:focus-visible:ring-offset-slate-900'
 
   const demo = (
     <section
@@ -102,7 +102,9 @@ export function Performance() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">{t('performance.title')}</h1>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+        {t('performance.title')}
+      </h1>
       <p className="mb-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         {t('performance.intro')}
       </p>

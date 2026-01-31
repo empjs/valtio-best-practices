@@ -1,3 +1,5 @@
+import type {Locale} from 'src/i18n/translations'
+
 /**
  * createStore 完整示例：导入 → 定义 → 读/写 → 历史 → 派生 → 异步
  * 调用闭环：创建 store → 组件 useSnapshot 订阅 → 用户操作调用 store.set/update → 触发订阅更新 → UI 重渲染
@@ -105,3 +107,7 @@ const asyncStore = createStore({
 })
 // Or put async method on store, this refers to store, call store.loadUser()
 `
+
+export function getCreateStoreSnippet(locale: Locale) {
+  return locale === 'zh' ? createStoreSnippet : createStoreSnippetEn
+}

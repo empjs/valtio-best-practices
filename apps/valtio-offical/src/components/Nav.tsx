@@ -1,8 +1,9 @@
+import {version} from '@empjs/valtio'
 import {createContext, useContext} from 'react'
 import {Link, useLocation} from 'wouter'
-import {localeStore} from '../stores/localeStore'
-import type {Locale} from '../i18n/translations'
 import {useT} from '../i18n'
+import type {Locale} from '../i18n/translations'
+import {localeStore} from '../stores/localeStore'
 
 export const ThemeContext = createContext<{isDark: boolean; onToggleTheme: () => void} | null>(null)
 export function useTheme() {
@@ -95,9 +96,12 @@ export function Nav() {
         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
           <Link
             href="/"
-            className="cursor-pointer rounded-lg px-2 py-2 text-sm font-semibold text-slate-800 transition-colors duration-200 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-100 dark:hover:text-slate-200 dark:focus-visible:ring-slate-500 dark:focus-visible:ring-offset-slate-900"
+            className="relative cursor-pointer rounded-lg px-2 py-2 text-sm font-semibold text-slate-800 transition-colors duration-200 hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-slate-100 dark:hover:text-slate-200 dark:focus-visible:ring-slate-500 dark:focus-visible:ring-offset-slate-900"
           >
             @empjs/valtio
+            <span className="absolute top-[-2px] right-0 hidden text-[9px] font-bold text-slate-400 dark:text-slate-500 sm:inline-block">
+              v{version}
+            </span>
           </Link>
           <span className="hidden text-gray-300 dark:text-slate-600 sm:inline" aria-hidden>
             |

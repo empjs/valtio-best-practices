@@ -1,46 +1,13 @@
 import {useStore} from '@empjs/valtio'
-import {useEffect, useRef, useState} from 'react'
-import {CodeBlock} from '../components/CodeBlock'
-import {PageWithDemo} from '../components/PageWithDemo'
-import {useT} from '../i18n'
-import {localeStore} from '../stores/localeStore'
+import {useEffect, useState} from 'react'
+import {CodeBlock} from 'src/components/CodeBlock'
+import {PageWithDemo} from 'src/components/PageWithDemo'
+import {useT} from 'src/i18n'
+import {localeStore} from 'src/stores/localeStore'
+import {OnlyCount, OnlyName} from './components/DemoComponents'
 import {getSubscribeSnippet} from './snippets'
 
-const cardChip =
-  'rounded border border-gray-200 bg-white px-2 py-1 shadow-sm dark:border-slate-600 dark:bg-slate-700/50'
-
-/** 仅用于 OnlyCount/OnlyName 的 store 类型：含 useSnapshot 且快照为 { count, name } */
-interface StoreWithCountName {
-  useSnapshot(): { count: number; name: string }
-}
-
-/** 只读 count，用于演示细粒度：改 name 时此组件不重渲染 */
-function OnlyCount({store, renderLabel}: {store: StoreWithCountName; renderLabel: string}) {
-  const snap = store.useSnapshot()
-  const renderCount = useRef(0)
-  renderCount.current += 1
-  return (
-    <div className={cardChip}>
-      <span className="tabular-nums text-slate-900 dark:text-slate-100">count: {snap.count}</span>
-      <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">{renderLabel}{renderCount.current}</span>
-    </div>
-  )
-}
-
-/** 只读 name，用于演示细粒度：改 count 时此组件不重渲染 */
-function OnlyName({store, renderLabel}: {store: StoreWithCountName; renderLabel: string}) {
-  const snap = store.useSnapshot()
-  const renderCount = useRef(0)
-  renderCount.current += 1
-  return (
-    <div className={cardChip}>
-      <span className="text-slate-900 dark:text-slate-100">name: {snap.name}</span>
-      <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">{renderLabel}{renderCount.current}</span>
-    </div>
-  )
-}
-
-export function Subscribe() {
+export function SubscribePage() {
   const t = useT()
   const locale = localeStore.useSnapshot().locale
   const [snap, store] = useStore(() => ({count: 0, name: 'x'}))
@@ -63,7 +30,7 @@ export function Subscribe() {
   }, [store])
 
   const btn =
-    'cursor-pointer rounded border border-transparent bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700 dark:focus-visible:ring-offset-slate-900'
+    'cursor-pointer whitespace-nowrap rounded border border-transparent bg-blue-600 px-2 py-1 text-xs font-medium text-white transition-colors duration-200 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700 dark:focus-visible:ring-offset-slate-900'
 
   const demo = (
     <section
@@ -119,7 +86,9 @@ export function Subscribe() {
 
   return (
     <PageWithDemo demo={demo}>
-      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">{t('subscribe.title')}</h1>
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">
+        {t('subscribe.title')}
+      </h1>
       <p className="mb-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         {t('subscribe.intro')}
       </p>

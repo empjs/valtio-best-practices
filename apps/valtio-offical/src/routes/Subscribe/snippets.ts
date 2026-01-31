@@ -1,3 +1,5 @@
+import type {Locale} from 'src/i18n/translations'
+
 /**
  * subscribe 完整示例：subscribeKey / subscribeKeys、batch、细粒度订阅
  * 调用闭环：createStore → subscribeKey/Keys 注册回调 → store.set/update 触发回调（如写日志/持久化）→ batch 内多次写只触发一次通知 → useSnapshot 只读用到的字段则只在该路径变化时重渲染
@@ -105,3 +107,7 @@ function OnlyName() {
 // batch: when one action updates many fields, reduce intermediate renders
 // Fine-grained: with large store, each component reads only what it needs, no manual selector
 `
+
+export function getSubscribeSnippet(locale: Locale) {
+  return locale === 'zh' ? subscribeSnippet : subscribeSnippetEn
+}

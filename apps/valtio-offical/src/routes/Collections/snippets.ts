@@ -1,3 +1,5 @@
+import type {Locale} from 'src/i18n/translations'
+
 /**
  * createMap / createSet 完整示例：可代理的 Map/Set，增删改会触发订阅更新
  * 调用闭环：createMap/createSet 创建 → 放入 store 或 useStore → 读 snap.map.get / snap.tagSet.has → 写 store.map.set / store.tagSet.add → 触发 UI 更新
@@ -129,3 +131,7 @@ function LocalCollectionsDemo() {
   )
 }
 `
+
+export function getCollectionsSnippet(locale: Locale) {
+  return locale === 'zh' ? collectionsSnippet : collectionsSnippetEn
+}

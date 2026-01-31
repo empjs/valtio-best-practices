@@ -1,3 +1,5 @@
+import type {Locale} from 'src/i18n/translations'
+
 /**
  * useStore 完整示例：组件内局部 store，每实例一份；支持常规 / 历史 / 派生 / 异步
  * 调用闭环：useStore(initialState) → 得到 [snap, store] → 读 snap、写 store → 仅当前组件树订阅，不影响其他实例
@@ -129,3 +131,7 @@ function UserPanel() {
 }
 // Flow: click → store.loadUser() → this.loading = true → UI shows Loading → request done → this.user / this.error, this.loading = false → re-render
 `
+
+export function getUseStoreSnippet(locale: Locale) {
+  return locale === 'zh' ? useStoreSnippet : useStoreSnippetEn
+}
