@@ -7,7 +7,7 @@ import {localeStore} from '../stores/localeStore'
 import {getCreateStoreSnippet} from './snippets'
 
 // 带历史的全局 store（用于本页 demo）
-const historyStore = createStore({count: 0}, {history: {limit: 10}})
+const historyStore = createStore({count: 0}, {history: {}})
 
 // 带派生的全局 store（用于本页 demo）
 const derivedStore = createStore(
@@ -61,14 +61,16 @@ function GlobalCounterBlock({label}: {label: string}) {
   )
 }
 
-/** 带历史的 createStore demo：读 snap.value，写 store.value，undo/redo */
+/** 带历史的 createStore demo：读 snap.value，写 store.value，undo/redo，显示当前记录步数 */
 function HistoryDemoBlock({label}: {label?: string}) {
   const t = useT()
   const snap = historyStore.useSnapshot()
+  const steps = snap.history?.nodes?.length ?? 0
   return (
     <div className={cardInner}>
       {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
-      <p className="mb-2 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.value.count}</p>
+      <p className="mb-1 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.value.count}</p>
+      <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">{t('common.historySteps')}: {steps}</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => (historyStore.value.count = snap.value.count + 1)} className={btn}>
           +1
@@ -216,7 +218,13 @@ export function CreateStore() {
       </p>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">{t('createStore.signature')}</p>
 
-      <CodeBlock code={getCreateStoreSnippet(locale)} title={t('createStore.codeTitle')} />
+      <CodeBlock
+        code={getCreateStoreSnippet(locale)}
+        title={t('createStore.codeTitle')}
+        titlePrefix={t('createStore.codeTitlePrefix')}
+        titleSteps={t('createStore.codeTitleSteps')}
+        titleSuffix={t('createStore.codeTitleSuffix')}
+      />
     </PageWithDemo>
   )
 }

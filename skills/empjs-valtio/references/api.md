@@ -21,9 +21,9 @@
 | `InitialStateOrFn<T>` | `T \| (() => T)`，初始状态或惰性函数 |
 | `DeriveFn<TProxy, TDerived>` | `(get, proxy) => TDerived`，派生函数 |
 | `CreateOptionsBase` | `{ devtools?: boolean; name?: string }` |
-| `WithHistoryOptions` | `{ limit?: number }` 等（与 valtio-history 兼容） |
+| `WithHistoryOptions` | 与 valtio-history 的 `proxyWithHistory` 第二参数一致 |
 | `CreateOptions<T, D>` | Base + `history?` + `derive?` |
-| `WithHistorySnapshot<T>` | `{ value, history, isUndoEnabled, isRedoEnabled, undo, redo }` |
+| `WithHistorySnapshot<T>` | `{ value, history, isUndoEnabled, isRedoEnabled, undo, redo }`；`history.nodes.length` 为当前记录步数 |
 | `StoreWithDerived<T, D>` | `{ base: T & StoreBaseMethods<T>; derived: object & { useSnapshot(): D } }` |
 
 ---
@@ -37,7 +37,7 @@ function createStore<T, D>(initialState: T, options: { derive: DeriveFn<T, D> })
 ```
 
 - **常规**：`options` 可选，支持 `devtools`、`name`；开发环境默认挂 devtools（可 `devtools: false` 关闭）。
-- **history**：与 `valtio-history` 的 `proxyWithHistory` 一致，本库额外支持 `limit` 自动裁剪历史节点。
+- **history**：与 `valtio-history` 的 `proxyWithHistory` 一致，选项原样透传。
 - **derive**：使用 `derive-valtio`，返回 `{ base, derived }`；base 写、derived 只读派生。
 
 ---
@@ -84,7 +84,7 @@ function useStore<T, D>(initialState: InitialStateOrFn<T>, options: { derive: De
 ## 增强 Store / History / Derive
 
 - **enhanceStore**：内部使用，为 `proxy` 挂载上述 `StoreBaseMethods`，对外通过 `createStore`/`useStore` 暴露。
-- **History**：`createStore(..., { history })` 或 `useStore(..., { history })`；读用 `snap.value`，写用 `store.value.xxx`；撤销/重做见 `WithHistorySnapshot`。
+- **History**：`createStore(..., { history: {} })` 或 `useStore(..., { history: {} })`；读用 `snap.value`，写用 `store.value.xxx`；撤销/重做见 `WithHistorySnapshot`；当前步数 `snap.history?.nodes?.length`。
 - **Derive**：`derive(get, proxy)` 中 `get(proxy)` 取当前快照；返回对象会变为派生 proxy，仅读、自动随 base 更新。
 
 ---

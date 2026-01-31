@@ -26,7 +26,7 @@ describe('useStore 常规', () => {
 
 describe('useStore history', () => {
   test('options.history 返回 value/undo/redo', () => {
-    const {result} = renderHook(() => useStore({count: 0}, {history: {limit: 10}}))
+    const {result} = renderHook(() => useStore({count: 0}, {history: {}}))
     const [snap, store] = result.current
     expect((snap as {value: {count: number}}).value).toEqual({count: 0})
     expect(typeof store.undo).toBe('function')
@@ -34,7 +34,7 @@ describe('useStore history', () => {
   })
 
   test('undo/redo 可调用', () => {
-    const {result} = renderHook(() => useStore({count: 0}, {history: {limit: 10}}))
+    const {result} = renderHook(() => useStore({count: 0}, {history: {}}))
     act(() => {
       result.current[1].value.count = 2
     })

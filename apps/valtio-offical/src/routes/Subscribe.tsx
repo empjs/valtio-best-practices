@@ -124,7 +124,13 @@ export function Subscribe() {
         {t('subscribe.intro')}
       </p>
 
-      <CodeBlock code={getSubscribeSnippet(locale)} title={t('subscribe.codeTitle')} />
+      <CodeBlock
+        code={getSubscribeSnippet(locale)}
+        title={t('subscribe.codeTitle')}
+        titlePrefix={t('subscribe.codeTitlePrefix')}
+        titleSteps={t('subscribe.codeTitleSteps')}
+        titleSuffix={t('subscribe.codeTitleSuffix')}
+      />
     </PageWithDemo>
   )
 }

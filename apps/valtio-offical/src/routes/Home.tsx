@@ -389,17 +389,17 @@ export function Home() {
       </header>
 
       <section className="relative mb-12 sm:mb-16 text-center" aria-labelledby="advantages-heading">
-        {/* 顶部渐变装饰线 */}
-
         <h2 id="advantages-heading" className="mx-auto mb-2 max-w-2xl text-2xl font-semibold sm:text-3xl">
-          {t('home.advantagesTitle')}
+          <span className="bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500 bg-clip-text text-transparent dark:from-blue-400 dark:via-blue-300 dark:to-orange-400">
+            {t('home.advantagesTitle')}
+          </span>
         </h2>
         <p className="mx-auto mb-2 max-w-xl text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-400">
           {t('home.advantagesSub')}
         </p>
         {/* 副标题下渐变线 */}
         <div
-          className="mx-auto mb-8 h-px max-w-xs bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-600"
+          className="mx-auto mb-8 h-px max-w-xs bg-gradient-to-r from-transparent via-blue-300 to-transparent dark:via-blue-600"
           aria-hidden
         />
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

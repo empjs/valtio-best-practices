@@ -32,7 +32,7 @@ function Controls() {
 // 返回的 store 有 .value（可写）、.undo()、.redo()；读用 snap.value.count，写用 store.value.count = x
 const historyStore = createStore(
   { count: 0 },
-  { history: { limit: 50 } }
+  { history: {} }
 )
 // 组件内：snap.isUndoEnabled / snap.isRedoEnabled 控制撤销/重做按钮禁用
 
@@ -84,7 +84,7 @@ function Controls() {
 // Returned store has .value (writable), .undo(), .redo(); read snap.value.count, write store.value.count = x
 const historyStore = createStore(
   { count: 0 },
-  { history: { limit: 50 } }
+  { history: {} }
 )
 // In component: snap.isUndoEnabled / snap.isRedoEnabled to disable undo/redo buttons
 

@@ -28,14 +28,16 @@ function LocalCounterBlock({label}: {label: string}) {
   )
 }
 
-/** 带历史的 useStore demo */
+/** 带历史的 useStore demo：显示当前记录步数 */
 function HistoryDemoBlock({label}: {label?: string}) {
   const t = useT()
-  const [snap, store] = useStore(() => ({count: 0}), {history: {limit: 10}})
+  const [snap, store] = useStore(() => ({count: 0}), {history: {}})
+  const steps = snap.history?.nodes?.length ?? 0
   return (
     <div className={cardInner}>
       {label ? <p className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p> : null}
-      <p className="mb-2 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.value.count}</p>
+      <p className="mb-1 tabular-nums text-slate-900 dark:text-slate-100">count: {snap.value.count}</p>
+      <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">{t('common.historySteps')}: {steps}</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => (store.value.count = snap.value.count + 1)} className={btn}>
           +1
@@ -196,7 +198,13 @@ export function UseStore() {
       </p>
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">{t('useStore.signature')}</p>
 
-      <CodeBlock code={getUseStoreSnippet(locale)} title={t('useStore.codeTitle')} />
+      <CodeBlock
+        code={getUseStoreSnippet(locale)}
+        title={t('useStore.codeTitle')}
+        titlePrefix={t('useStore.codeTitlePrefix')}
+        titleSteps={t('useStore.codeTitleSteps')}
+        titleSuffix={t('useStore.codeTitleSuffix')}
+      />
     </PageWithDemo>
   )
 }

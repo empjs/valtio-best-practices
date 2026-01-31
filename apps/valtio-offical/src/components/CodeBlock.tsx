@@ -1,18 +1,37 @@
 import {useContext, useState} from 'react'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 import {oneDark, oneLight} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import {ArrowTagTitle} from './ArrowTagTitle'
 import {ThemeContext} from './Nav'
 
 interface CodeBlockProps {
   code: string
   language?: string
+  /** 纯文本标题（无箭头标签时使用，或作为无障碍备用） */
   title?: string
+  /** 箭头标签：前缀（如「完整示例」） */
+  titlePrefix?: string
+  /** 箭头标签：步骤，逗号分隔（如 "导入, 定义, 读/写, 历史"） */
+  titleSteps?: string
+  /** 箭头标签：后缀（如「含调用闭环与中文提示」） */
+  titleSuffix?: string
 }
 
-export function CodeBlock({code, language = 'typescript', title}: CodeBlockProps) {
+export function CodeBlock({
+  code,
+  language = 'typescript',
+  title,
+  titlePrefix,
+  titleSteps,
+  titleSuffix,
+}: CodeBlockProps) {
   const [copied, setCopied] = useState(false)
   const ctx = useContext(ThemeContext)
   const isDark = ctx?.isDark ?? false
+
+  const hasArrowTitle = titlePrefix != null && titleSteps != null && titleSteps.trim() !== ''
+  const steps = hasArrowTitle ? titleSteps.split(',').map(s => s.trim()).filter(Boolean) : []
+  const showCaption = (title != null && title !== '') || hasArrowTitle
 
   const handleCopy = async () => {
     try {
@@ -30,15 +49,24 @@ export function CodeBlock({code, language = 'typescript', title}: CodeBlockProps
         isDark ? 'border-blue-800/60 bg-blue-950' : 'border-slate-200 bg-white dark:border-blue-800/60 dark:bg-blue-950'
       }`}
     >
-      {(title ?? null) && (
+      {showCaption && (
         <figcaption
-          className={`border-b px-3 py-2 text-sm ${
+          className={`flex flex-wrap items-center gap-2 border-b px-3 py-2.5 text-sm ${
             isDark
               ? 'border-blue-800/60 bg-blue-900/80 text-slate-300'
               : 'border-slate-200 bg-slate-50 text-slate-700 dark:border-blue-800/60 dark:bg-blue-900/80 dark:text-slate-300'
           }`}
+          title={title ?? undefined}
         >
-          {title}
+          {hasArrowTitle && steps.length > 0 ? (
+            <ArrowTagTitle
+              prefix={titlePrefix}
+              steps={steps}
+              suffix={titleSuffix ?? ''}
+            />
+          ) : (
+            title
+          )}
         </figcaption>
       )}
       <div className="relative">

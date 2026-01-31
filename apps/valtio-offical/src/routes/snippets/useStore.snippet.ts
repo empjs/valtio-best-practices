@@ -24,8 +24,8 @@ function LocalCounter() {
 // 单例、跨组件共享 → createStore
 // 组件内独立状态、每实例一份（表单、编辑器、画板）→ useStore
 
-// ========== 4. 带历史：useStore(initialState, { history: { limit } }) ==========
-const [snap, store] = useStore(() => ({ count: 0 }), { history: { limit: 50 } })
+// ========== 4. 带历史：useStore(initialState, { history: {} }) ==========
+const [snap, store] = useStore(() => ({ count: 0 }), { history: {} })
 // 读: snap.value.count  写: store.value.count = x  撤销/重做: store.undo() / store.redo()
 
 // ========== 5. 带派生：useStore(initialState, { derive }) ==========
@@ -88,8 +88,8 @@ function LocalCounter() {
 // Singleton, shared across components → createStore
 // Local state per instance (forms, editors, canvas) → useStore
 
-// ========== 4. With history: useStore(initialState, { history: { limit } }) ==========
-const [snap, store] = useStore(() => ({ count: 0 }), { history: { limit: 50 } })
+// ========== 4. With history: useStore(initialState, { history: {} }) ==========
+const [snap, store] = useStore(() => ({ count: 0 }), { history: {} })
 // Read: snap.value.count  Write: store.value.count = x  Undo/redo: store.undo() / store.redo()
 
 // ========== 5. With derive: useStore(initialState, { derive }) ==========

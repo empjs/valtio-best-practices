@@ -107,7 +107,13 @@ export function Performance() {
         {t('performance.intro')}
       </p>
 
-      <CodeBlock code={getPerformanceSnippet(locale)} title={t('performance.codeTitle')} />
+      <CodeBlock
+        code={getPerformanceSnippet(locale)}
+        title={t('performance.codeTitle')}
+        titlePrefix={t('performance.codeTitlePrefix')}
+        titleSteps={t('performance.codeTitleSteps')}
+        titleSuffix={t('performance.codeTitleSuffix')}
+      />
     </PageWithDemo>
   )
 }
