@@ -11,7 +11,9 @@ body {
 }
 
 html.dark body {
-  background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+  /* Vivid Dark: Deep Slate 950 with top spotlight */
+  background: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 100%);
+  color: #f8fafc;
 }
 
 /* UI/UX Pro Max 默认风格：设计 token 与可读性 */
@@ -28,10 +30,14 @@ html.dark body {
   --color-accent: #ea580c;
 }
 html.dark {
-  --color-primary: #3b82f6;
-  --color-primary-mid: #60a5fa;
-  --color-accent-mid: #fbbf24;
-  --color-accent: #fb923c;
+  /* Vivid Colors for Dark Mode */
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-primary: #60a5fa;     /* Blue 400 */
+  --color-primary-mid: #818cf8; /* Indigo 400 */
+  --color-accent-mid: #fbbf24;  /* Amber 400 */
+  --color-accent: #fb923c;      /* Orange 400 */
 }
 /* header 区域叠底渐变（蓝橙过渡，确保正常显示） */
 .header-overlay-gradient {
@@ -46,12 +52,10 @@ html.dark {
   );
 }
 html.dark .header-overlay-gradient {
-  background: linear-gradient(
-    to bottom right,
-    rgb(30 58 138 / 0.3),
-    rgb(15 23 42 / 0.5),
-    rgb(124 45 18 / 0.3)
-  );
+  /* Vivid Glows */
+  background: 
+    radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.15), transparent 60%),
+    radial-gradient(circle at 70% 30%, rgba(249, 115, 22, 0.1), transparent 60%);
 }
 
 /* 首页主标题蓝橙渐变字（平滑过渡） */

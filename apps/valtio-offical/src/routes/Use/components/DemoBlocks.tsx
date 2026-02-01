@@ -1,5 +1,5 @@
 import {useT} from 'src/i18n'
-import {asyncStore, derivedStore, historyStore} from 'src/routes/CreateStore/demos.store'
+import {asyncStore, derivedStore, historyStore} from 'src/routes/Use/demos.store'
 import {demoStore} from 'src/stores/demoStore'
 
 const btn =

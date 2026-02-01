@@ -15,6 +15,10 @@ interface CodeBlockProps {
   titleSteps?: string
   /** 箭头标签：后缀（如「含调用闭环与中文提示」） */
   titleSuffix?: string
+  /**
+   * Font size for the code block. Defaults to '0.875rem' (text-sm).
+   */
+  fontSize?: string
 }
 
 export function CodeBlock({
@@ -24,13 +28,19 @@ export function CodeBlock({
   titlePrefix,
   titleSteps,
   titleSuffix,
+  fontSize = '0.875rem',
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false)
   const ctx = useContext(ThemeContext)
   const isDark = ctx?.isDark ?? false
 
   const hasArrowTitle = titlePrefix != null && titleSteps != null && titleSteps.trim() !== ''
-  const steps = hasArrowTitle ? titleSteps.split(',').map(s => s.trim()).filter(Boolean) : []
+  const steps = hasArrowTitle
+    ? titleSteps
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+    : []
   const showCaption = (title != null && title !== '') || hasArrowTitle
 
   const handleCopy = async () => {
@@ -59,11 +69,7 @@ export function CodeBlock({
           title={title ?? undefined}
         >
           {hasArrowTitle && steps.length > 0 ? (
-            <ArrowTagTitle
-              prefix={titlePrefix}
-              steps={steps}
-              suffix={titleSuffix ?? ''}
-            />
+            <ArrowTagTitle prefix={titlePrefix} steps={steps} suffix={titleSuffix ?? ''} />
           ) : (
             title
           )}
@@ -79,7 +85,7 @@ export function CodeBlock({
             paddingRight: '4rem',
             paddingBottom: '1rem',
             paddingLeft: '1rem',
-            fontSize: '0.875rem',
+            fontSize,
             lineHeight: 1.6,
             background: 'transparent',
           }}

@@ -2,7 +2,7 @@ import {CodeBlock} from 'src/components/CodeBlock'
 import {PageWithDemo} from 'src/components/PageWithDemo'
 import {useT} from 'src/i18n'
 import {localeStore} from 'src/stores/localeStore'
-import {GlobalCollectionsBlock, LocalCollectionsBlock} from './components/DemoBlocks'
+import {GlobalMapBlock, GlobalSetBlock, LocalMapBlock, LocalSetBlock} from './components/DemoBlocks'
 import {getCollectionsSnippet} from './snippets'
 
 export function CollectionsPage() {
@@ -14,32 +14,32 @@ export function CollectionsPage() {
       aria-live="polite"
     >
       <div>
-        <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{t('collections.s1Title')}</h3>
-        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{t('collections.s1Desc')}</p>
+        <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Map Scenarios</h3>
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">Global (A & B sync), Local (C isolated)</p>
         <div className="flex gap-3">
           <div className="min-w-0 flex-1">
-            <GlobalCollectionsBlock label={t('common.instanceA')} />
+            <GlobalMapBlock label={t('common.instanceA')} />
           </div>
           <div className="min-w-0 flex-1">
-            <GlobalCollectionsBlock label={t('common.instanceB')} />
+            <GlobalMapBlock label={t('common.instanceB')} />
           </div>
           <div className="min-w-0 flex-1">
-            <GlobalCollectionsBlock label={t('common.instanceC')} />
+            <LocalMapBlock label={t('common.instanceC')} />
           </div>
         </div>
       </div>
       <div>
-        <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{t('collections.s2Title')}</h3>
-        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">{t('collections.s2Desc')}</p>
+        <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Set Scenarios</h3>
+        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">Global (A & B sync), Local (C isolated)</p>
         <div className="flex gap-3">
           <div className="min-w-0 flex-1">
-            <LocalCollectionsBlock label={t('common.instanceA')} />
+            <GlobalSetBlock label={t('common.instanceA')} />
           </div>
           <div className="min-w-0 flex-1">
-            <LocalCollectionsBlock label={t('common.instanceB')} />
+            <GlobalSetBlock label={t('common.instanceB')} />
           </div>
           <div className="min-w-0 flex-1">
-            <LocalCollectionsBlock label={t('common.instanceC')} />
+            <LocalSetBlock label={t('common.instanceC')} />
           </div>
         </div>
       </div>
@@ -61,6 +61,7 @@ export function CollectionsPage() {
         titlePrefix={t('collections.codeTitlePrefix')}
         titleSteps={t('collections.codeTitleSteps')}
         titleSuffix={t('collections.codeTitleSuffix')}
+        fontSize="0.75rem"
       />
     </PageWithDemo>
   )

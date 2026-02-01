@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import {Route, Switch} from 'wouter'
 import {Nav, ThemeContext} from './components/Nav'
 import {useT} from './i18n'
-import {Collections, CreateStore, Home, Performance, Subscribe, UseStore} from './routes/index'
+import {Collections, Home, Performance, Subscribe, Use} from './routes/index'
 
 const THEME_KEY = 'valtio-theme'
 
@@ -49,14 +49,31 @@ const App = () => {
         <main id="main">
           <Switch>
             <Route path="/" component={Home} />
-            <Route path="/create-store" component={CreateStore} />
-            <Route path="/use-store" component={UseStore} />
+            <Route path="/use" component={Use} />
             <Route path="/collections" component={Collections} />
             <Route path="/subscribe" component={Subscribe} />
             <Route path="/performance" component={Performance} />
           </Switch>
         </main>
         <footer className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+          <div className="mb-2 flex justify-center gap-4">
+            <a
+              href="https://skill.empjs.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              Nova Skill
+            </a>
+            <a
+              href="https://empjs.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+            >
+              EMPJS
+            </a>
+          </div>
           {t('app.footer')}
         </footer>
       </div>

@@ -16,8 +16,7 @@ const GITHUB_URL = 'https://github.com/empjs/valtio-best-practices'
 
 const links: Array<{href: string; labelKey: string}> = [
   {href: '/', labelKey: 'nav.home'},
-  {href: '/create-store', labelKey: 'nav.createStore'},
-  {href: '/use-store', labelKey: 'nav.useStore'},
+  {href: '/use', labelKey: 'nav.createStore'},
   {href: '/collections', labelKey: 'nav.collections'},
   {href: '/subscribe', labelKey: 'nav.subscribe'},
   {href: '/performance', labelKey: 'nav.performance'},

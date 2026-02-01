@@ -11,8 +11,7 @@ export const installCommands = [
 export type InstallLabel = (typeof installCommands)[number]['label']
 
 export const cards = [
-  {href: '/create-store', titleKey: 'home.cards.createStore', descKey: 'home.cards.createStoreDesc'},
-  {href: '/use-store', titleKey: 'home.cards.useStore', descKey: 'home.cards.useStoreDesc'},
+  {href: '/use', titleKey: 'home.cards.createStore', descKey: 'home.cards.createStoreDesc'},
   {href: '/collections', titleKey: 'home.cards.collections', descKey: 'home.cards.collectionsDesc'},
   {href: '/subscribe', titleKey: 'home.cards.subscribe', descKey: 'home.cards.subscribeDesc'},
   {href: '/performance', titleKey: 'home.cards.performance', descKey: 'home.cards.performanceDesc'},
@@ -185,7 +184,7 @@ export const advantages: Array<{
 
 /** 用法导航卡片：带 logo、hover 高亮与描边 */
 export const docCardIcons: Record<string, (cls: string) => ReactNode> = {
-  'create-store': cls => (
+  use: cls => (
     <svg
       className={cls}
       xmlns="http://www.w3.org/2000/svg"
@@ -197,19 +196,6 @@ export const docCardIcons: Record<string, (cls: string) => ReactNode> = {
     >
       <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
       <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" />
-    </svg>
-  ),
-  'use-store': cls => (
-    <svg
-      className={cls}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden
-    >
-      <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" />
     </svg>
   ),
   collections: cls => (

@@ -108,6 +108,71 @@ function OnlyName() {
 // Fine-grained: with large store, each component reads only what it needs, no manual selector
 `
 
+export const subscribeBasicSnippet = `// ========== 1. 基础订阅 (subscribe) ==========
+import { subscribe } from '@empjs/valtio'
+
+// 监听整个 store 及其子节点的所有变化
+subscribe(store, () => {
+  console.log('Store updated:', store)
+})
+`
+
+export const subscribeKeySnippet = `// ========== 2. 单 Key 订阅 (subscribeKey) ==========
+// 仅当 'count' 字段变化时触发
+store.subscribeKey('count', (val) => {
+  console.log('Count changed:', val)
+})
+`
+
+export const subscribeKeysSnippet = `// ========== 3. 多 Key 订阅 (subscribeKeys) ==========
+// 当 'count' 或 'name' 变化时触发
+store.subscribeKeys(['count', 'name'], (key, val) => {
+  console.log(key, 'changed to', val)
+})
+`
+
+export const subscribeBatchSnippet = `// ========== 4. 批量更新 (batch) ==========
+// 合并多次更新为一次通知，减少中间渲染
+store.batch((s) => {
+  s.count = 0
+  s.name = 'reset'
+})
+`
+
+export const subscribeBasicSnippetEn = `// ========== 1. Basic Subscribe ==========
+import { subscribe } from '@empjs/valtio'
+
+// Listen to any change in the store tree
+subscribe(store, () => {
+  console.log('Store updated:', store)
+})
+`
+
+export const subscribeKeySnippetEn = `// ========== 2. Subscribe Key ==========
+// Trigger only when 'count' changes
+store.subscribeKey('count', (val) => {
+  console.log('Count changed:', val)
+})
+`
+
+export const subscribeKeysSnippetEn = `// ========== 3. Subscribe Keys (Multiple) ==========
+// Trigger when 'count' or 'name' changes
+store.subscribeKeys(['count', 'name'], (key, val) => {
+  console.log(key, 'changed to', val)
+})
+`
+
+export const subscribeBatchSnippetEn = `// ========== 4. Batch Update ==========
+// Merge multiple updates into one notification
+store.batch((s) => {
+  s.count = 0
+  s.name = 'reset'
+})
+`
+
 export function getSubscribeSnippet(locale: Locale) {
-  return locale === 'zh' ? subscribeSnippet : subscribeSnippetEn
+  if (locale === 'zh') {
+    return [subscribeBasicSnippet, subscribeKeySnippet, subscribeKeysSnippet, subscribeBatchSnippet].join('\n')
+  }
+  return [subscribeBasicSnippetEn, subscribeKeySnippetEn, subscribeKeysSnippetEn, subscribeBatchSnippetEn].join('\n')
 }

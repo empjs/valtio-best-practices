@@ -106,6 +106,93 @@ function List() {
 }
 `
 
+export const performanceSnippet2 = `// ========== 2. 细粒度更新（子组件） ==========
+import { useStore } from '@empjs/valtio'
+
+const store = useStore(() => ({ title: 'Parent', count: 0 }))[1]
+
+// 只订阅 count 的组件，title 变化不会导致此组件重渲染
+function Child({ id }: { id: string }) {
+  const snap = store.useSnapshot()
+  return <div>{id}: {snap.count} (Render: {Math.random()})</div>
+}
+`
+
+export const performanceSnippet3 = `// ========== 3. 瞬时更新（Ref） ==========
+import { useRef, useEffect } from 'react'
+import { subscribe } from '@empjs/valtio'
+
+// 鼠标高频移动，不触发生命周期和 React commit，只更新 DOM
+function MouseTracker() {
+  const divRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    // 订阅 store.pos 变化，直接操作 DOM
+    return subscribe(store.pos, () => {
+       if (divRef.current) divRef.current.innerText = \`\${store.pos.x}, \${store.pos.y}\`
+    })
+  }, [])
+  return <div ref={divRef} />
+}
+`
+
+export const performanceSnippet4 = `// ========== 4. 派生计算缓存 (derive) ==========
+import { derive } from '@empjs/valtio'
+
+// 只有 filters 或 items 变化时，filteredItems 才会重新计算
+const derived = derive({
+  filteredItems: (get) => {
+    const items = get(store).items
+    const filter = get(store).filter
+    return items.filter(i => i.includes(filter))
+  }
+})
+`
+
+export const performanceSnippet2En = `// ========== 2. Fine-grained Update (Child) ==========
+import { useStore } from '@empjs/valtio'
+
+const store = useStore(() => ({ title: 'Parent', count: 0 }))[1]
+
+// Child only subscribes to count; title change won't re-render it
+function Child({ id }: { id: string }) {
+  const snap = store.useSnapshot()
+  return <div>{id}: {snap.count} (Render: {Math.random()})</div>
+}
+`
+
+export const performanceSnippet3En = `// ========== 3. Transient Update (Ref) ==========
+import { useRef, useEffect } from 'react'
+import { subscribe } from '@empjs/valtio'
+
+// High-freq mouse move, update DOM directly, no React re-render
+function MouseTracker() {
+  const divRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    // Subscribe to store.pos, update DOM
+    return subscribe(store.pos, () => {
+       if (divRef.current) divRef.current.innerText = \`\${store.pos.x}, \${store.pos.y}\`
+    })
+  }, [])
+  return <div ref={divRef} />
+}
+`
+
+export const performanceSnippet4En = `// ========== 4. Derived Memoization ==========
+import { derive } from '@empjs/valtio'
+
+// filteredItems re-computes only when items or filter changes
+const derived = derive({
+  filteredItems: (get) => {
+    const items = get(store).items
+    const filter = get(store).filter
+    return items.filter(i => i.includes(filter))
+  }
+})
+`
+
 export function getPerformanceSnippet(locale: Locale) {
-  return locale === 'zh' ? performanceSnippet : performanceSnippetEn
+  if (locale === 'zh') {
+    return [performanceSnippet, performanceSnippet2, performanceSnippet3, performanceSnippet4].join('\n')
+  }
+  return [performanceSnippetEn, performanceSnippet2En, performanceSnippet3En, performanceSnippet4En].join('\n')
 }
