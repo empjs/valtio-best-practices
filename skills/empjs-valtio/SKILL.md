@@ -1,6 +1,6 @@
 ---
 name: empjs-valtio
-description: "React 全局/局部 proxy 状态库：createStore、useStore、EnhancedStore，支持历史、派生、持久化、Map/Set、订阅与 batch。"
+description: "@empjs/valtio 状态库使用指南。基于 Valtio v2 的增强封装，提供 createStore、useStore、历史回溯、派生状态、持久化、Map/Set 代理、subscribeKey/subscribeKeys、batch 等。在以下场景使用本 skill：使用或迁移到 @empjs/valtio、在 React 中实现全局/局部 proxy 状态、需要撤销重做/derive/持久化/集合、编写或审查 valtio 相关代码、排查 \"Please use proxy object\" 或订阅不更新问题。"
 ---
 
 # @empjs/valtio Skill
@@ -13,12 +13,6 @@ description: "React 全局/局部 proxy 状态库：createStore、useStore、Enh
 |------|------|
 | 单例、跨组件共享（如主题、用户、全局计数） | `createStore(initialState, options?)` |
 | 组件内独立状态、每实例一份（表单、编辑器、画板） | `useStore(initialState, options?)` |
-
-## 类型与组件通信（EnhancedStore）
-
-- **类型**：用 `EnhancedStore<T>` 表示「状态 + 增强方法」，不要手写 `interface MyStore { useSnapshot(): ...; set(): ... }`；`createStore` / `useStore` 返回的 store 即 `EnhancedStore`。
-- **全局 Store**：`createStore(initialState)` 得到单例 EnhancedStore，跨组件共享。
-- **父传子**：子组件 props 收 `EnhancedStore<MyState>`，内部用 `store.useSnapshot()` 读、`store.set` / `store.reset` / 直接写 `store.key` 写；父组件 `useStore(...)` 得到 `[snap, store]`，把 `store` 传给子组件即可。调用闭环、选型与常见错误等按权重排序见 [references/best-practices.md](references/best-practices.md)。
 
 ## 按使用方法速查
 
@@ -45,14 +39,12 @@ description: "React 全局/局部 proxy 状态库：createStore、useStore、Enh
 
 ## 类型要点（TypeScript）
 
-- **推荐**：用 `EnhancedStore<T>` 表示「状态 + 增强方法」；`createStore` 常规返回即 `EnhancedStore<T>`（等价于 `T & StoreBaseMethods<T>`）。
-- `createStore(initialState)` → `EnhancedStore<T>`；带 `history` → `HistoryStoreWithSnapshot<T>`；带 `derive` → `{ base, derived }`。
-- `useStore` 常规 → `[Snapshot<T>, EnhancedStore<T>]`；带 derive → `[Snapshot<T>, EnhancedStore<T>, D]`；带 history → `[WithHistorySnapshot<T>, HistoryStore<T>]`。
+- `createStore(initialState)` → `T & StoreBaseMethods<T>`；带 `history` → `HistoryStoreWithSnapshot<T>`；带 `derive` → `{ base, derived }`。
+- `useStore` 常规 → `[Snapshot<T>, T & StoreBaseMethods<T>]`；带 derive → `[Snapshot<T>, T & StoreBaseMethods<T>, D]`；带 history → `[WithHistorySnapshot<T>, HistoryStore<T>]`。
 - 初始状态可用 `InitialStateOrFn<T>`（即 `T | (() => T)`）惰性初始化。
 
 ## 更多资源
 
-- **最佳实践（按权重：闭环 → 类型/选型 → 常用用法 → 常见错误）**：[references/best-practices.md](references/best-practices.md)
 - **按使用方法详细说明**：[references/usage.md](references/usage.md)
 - **API 与类型**：[references/api.md](references/api.md)
-- **示例（按用法分文件）**：[examples/index.md](examples/index.md) — 含 [best-practices](examples/best-practices.md)、[regular](examples/regular.md)、[history](examples/history.md)、[derive](examples/derive.md)、[async](examples/async.md)、[collections](examples/collections.md)、[persist](examples/persist.md)、[subscribe](examples/subscribe.md)、[performance](examples/performance.md)
+- **示例（按用法分文件）**：[examples/index.md](examples/index.md) — 含 [regular](examples/regular.md)、[history](examples/history.md)、[derive](examples/derive.md)、[async](examples/async.md)、[collections](examples/collections.md)、[persist](examples/persist.md)、[subscribe](examples/subscribe.md)、[performance](examples/performance.md)

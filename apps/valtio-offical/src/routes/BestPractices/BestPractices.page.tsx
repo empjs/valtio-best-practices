@@ -76,22 +76,12 @@ export function BestPracticesPage() {
       </header>
 
       <div className="grid gap-10 md:grid-cols-2">
-        {/* Left: Explanation (7 sections by usage weight) */}
+        {/* Left: Explanation */}
         <div className="space-y-8">
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                 1
-              </span>
-              {t('bestPractices.readWriteTitle')}
-            </h2>
-            <p className="leading-relaxed text-slate-600 dark:text-slate-400">{t('bestPractices.readWriteDesc')}</p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                2
               </span>
               {t('bestPractices.typeTitle')}
             </h2>
@@ -101,51 +91,11 @@ export function BestPracticesPage() {
           <section>
             <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                3
-              </span>
-              {t('bestPractices.chooseTitle')}
-            </h2>
-            <p className="leading-relaxed text-slate-600 dark:text-slate-400">{t('bestPractices.chooseDesc')}</p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                4
-              </span>
-              {t('bestPractices.regularTitle')}
-            </h2>
-            <p className="leading-relaxed text-slate-600 dark:text-slate-400">{t('bestPractices.regularDesc')}</p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                5
-              </span>
-              {t('bestPractices.globalTitle')}
-            </h2>
-            <p className="leading-relaxed text-slate-600 dark:text-slate-400">{t('bestPractices.globalDesc')}</p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                6
+                2
               </span>
               {t('bestPractices.compTitle')}
             </h2>
             <p className="leading-relaxed text-slate-600 dark:text-slate-400">{t('bestPractices.compDesc')}</p>
-          </section>
-
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                7
-              </span>
-              {t('bestPractices.pitfallsTitle')}
-            </h2>
-            <p className="leading-relaxed text-slate-600 dark:text-slate-400">{t('bestPractices.pitfallsDesc')}</p>
           </section>
 
           <div className="mt-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
