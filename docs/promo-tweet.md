@@ -1,4 +1,4 @@
-# @empjs/valtio：更少样板、更强能力、微前端友好
+# @empjs/valtio 让 Valtio 开箱即用、少写一半代码
 
 @empjs/valtio 是 [Valtio](https://github.com/pmndrs/valtio) 的增强版状态库：在保留细粒度响应式与快照语义的前提下，**单包内建** createStore / useStore、**17 个 Store 方法**、历史回溯、派生状态、持久化、createMap/createSet；典型场景减少约 40%～50% 样板，接入步骤从多步收敛为一步。**微前端友好**：子应用可独立 useStore，主机通过 **props 传 store** 即可与远程组件共享状态，无需 Context 与事件总线。下文以产品能力为中心，用代码展示其强大与用法。
 
