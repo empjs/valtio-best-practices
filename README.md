@@ -46,8 +46,10 @@ pnpm add @empjs/valtio
 
 ## 相关链接
 
+- [官网 / 文档站](https://valtio.empjs.dev/)
 - [Valtio](https://github.com/pmndrs/valtio)
 - [仓库](https://github.com/empjs/valtio-best-practices)
+- [推文 / 宣传稿](docs/promo-tweet.md)
 
 ## License
 
