@@ -23,6 +23,8 @@
 | `CreateOptionsBase` | `{ devtools?: boolean; name?: string }` |
 | `WithHistoryOptions` | 与 valtio-history 的 `proxyWithHistory` 第二参数一致 |
 | `CreateOptions<T, D>` | Base + `history?` + `derive?` |
+| `StoreBaseMethods<T>` | 增强方法集：`useSnapshot`、`set`、`reset`、`batch`、`subscribe` 等 |
+| **`EnhancedStore<T>`** | **`T & StoreBaseMethods<T>`**，推荐用于类型标注：createStore/useStore 常规返回、子组件 props 收「可读可写 store」时用此类型 |
 | `WithHistorySnapshot<T>` | `{ value, history, isUndoEnabled, isRedoEnabled, undo, redo }`；`history.nodes.length` 为当前记录步数 |
 | `StoreWithDerived<T, D>` | `{ base: T & StoreBaseMethods<T>; derived: object & { useSnapshot(): D } }` |
 
@@ -31,12 +33,12 @@
 ## createStore
 
 ```ts
-function createStore<T>(initialState: T, options?: CreateOptionsBase): T & StoreBaseMethods<T>
+function createStore<T>(initialState: T, options?: CreateOptionsBase): EnhancedStore<T>  // 即 T & StoreBaseMethods<T>
 function createStore<T>(initialState: T, options: { history: WithHistoryOptions }): HistoryStoreWithSnapshot<T>
 function createStore<T, D>(initialState: T, options: { derive: DeriveFn<T, D> }): StoreWithDerived<T, D>
 ```
 
-- **常规**：`options` 可选，支持 `devtools`、`name`；开发环境默认挂 devtools（可 `devtools: false` 关闭）。
+- **常规**：返回 `EnhancedStore<T>`；`options` 可选，支持 `devtools`、`name`；开发环境默认挂 devtools（可 `devtools: false` 关闭）。
 - **history**：与 `valtio-history` 的 `proxyWithHistory` 一致，选项原样透传。
 - **derive**：使用 `derive-valtio`，返回 `{ base, derived }`；base 写、derived 只读派生。
 
@@ -45,12 +47,12 @@ function createStore<T, D>(initialState: T, options: { derive: DeriveFn<T, D> })
 ## useStore
 
 ```ts
-function useStore<T>(initialState: InitialStateOrFn<T>): [Snapshot<T>, T & StoreBaseMethods<T>]
+function useStore<T>(initialState: InitialStateOrFn<T>): [Snapshot<T>, EnhancedStore<T>]
 function useStore<T>(initialState: InitialStateOrFn<T>, options: { history: WithHistoryOptions }): [WithHistorySnapshot<T>, HistoryStore<T>]
-function useStore<T, D>(initialState: InitialStateOrFn<T>, options: { derive: DeriveFn<T, D> }): [Snapshot<T>, T & StoreBaseMethods<T>, D]
+function useStore<T, D>(initialState: InitialStateOrFn<T>, options: { derive: DeriveFn<T, D> }): [Snapshot<T>, EnhancedStore<T>, D]
 ```
 
-- 组件内每实例独立 store；`initialState` 可为函数实现惰性初始化。
+- 常规返回 `[snap, store]`，`store` 为 `EnhancedStore<T>`；组件内每实例独立；`initialState` 可为函数实现惰性初始化。
 - **useStore 的 options** 仅支持 `history`、`derive`，无 `devtools`/`name`。
 
 ---
@@ -83,6 +85,7 @@ function useStore<T, D>(initialState: InitialStateOrFn<T>, options: { derive: De
 
 ## 增强 Store / History / Derive
 
+- **EnhancedStore**：类型 `T & StoreBaseMethods<T>`，用于标注「可读可写 store」；子组件接收 `EnhancedStore<MyState>` 即可读（useSnapshot）也可写（set/reset/直接赋值）。最佳实践见 [best-practices.md](best-practices.md)。
 - **enhanceStore**：内部使用，为 `proxy` 挂载上述 `StoreBaseMethods`，对外通过 `createStore`/`useStore` 暴露。
 - **History**：`createStore(..., { history: {} })` 或 `useStore(..., { history: {} })`；读用 `snap.value`，写用 `store.value.xxx`；撤销/重做见 `WithHistorySnapshot`；当前步数 `snap.history?.nodes?.length`。
 - **Derive**：`derive(get, proxy)` 中 `get(proxy)` 取当前快照；返回对象会变为派生 proxy，仅读、自动随 base 更新。

@@ -4,6 +4,7 @@
 
 | 文件 | 内容 |
 |------|------|
+| [best-practices.md](best-practices.md) | EnhancedStore 类型、全局 store、父传子传 store |
 | [regular.md](regular.md) | 常规 createStore（全局）、常规 useStore（局部） |
 | [history.md](history.md) | 带历史的 createStore、带历史的 useStore（含步数） |
 | [derive.md](derive.md) | 带派生的 createStore、带派生的 useStore |

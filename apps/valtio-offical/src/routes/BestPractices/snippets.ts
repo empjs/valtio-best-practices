@@ -3,35 +3,30 @@ import type {Locale} from 'src/i18n/translations'
 const snippets: Record<Locale, string> = {
   zh: `import { type EnhancedStore, createStore, useStore } from '@empjs/valtio'
 
-// 1. 类型定义最佳姿势：使用 EnhancedStore<T>
+// 1. 调用闭环（必守）：读用 snap，写用 store；勿用 store.xxx 做渲染
+//    历史 store：读 snap.value.xxx，写 store.value.xxx；undo/redo 用 snap.undo()/snap.redo()
+// ------------------------------------------------------------------
+
+// 2. 类型定义：使用 EnhancedStore<T>（勿手写 interface MyStore）
 // ------------------------------------------------------------------
 type MyState = { count: number; name: string }
-
-// 错误：手动定义 (繁琐且容易漏掉 set/reset 等方法)
-// interface MyStore { useSnapshot(): MyState; ... }
-
-// 正确：一步到位 (包含 useSnapshot, set, reset, batch, subscribe...)
 type MyStore = EnhancedStore<MyState>
 
-
-// 2. 只有全局 Store (Global)
+// 3. 选型：单例/跨组件 → createStore；组件内每实例 → useStore
+// 4. 常规 Store：createStore 模块级、useStore 返回 [snap, store]，可惰性初始化
+// 5. 全局 Store
 // ------------------------------------------------------------------
-const globalStore = createStore({ count: 0, name: 'global' }) // 自动推导为 EnhancedStore
+const globalStore = createStore({ count: 0, name: 'global' })
 
-
-// 3. 组件通信最佳姿势 (Parent -> Child)
+// 6. 组件通信 (Parent -> Child)
 // ------------------------------------------------------------------
 
-// Child: 接收 EnhancedStore，既能读也能写
+// Child: 接收 EnhancedStore，读用 snap、写用 store
 function ChildComponent({ store }: { store: EnhancedStore<MyState> }) {
-  // 读：类型自动推导
   const snap = store.useSnapshot()
-
   return (
     <div>
       <p>Count: {snap.count}</p>
-      
-      {/* 写：直接调用 store 方法，类型安全 */}
       <button onClick={() => store.count++}>+1</button>
       <button onClick={() => store.set('name', 'child')}>Change Name</button>
       <button onClick={() => store.reset({ count: 0, name: 'reset' })}>Reset</button>
@@ -39,46 +34,40 @@ function ChildComponent({ store }: { store: EnhancedStore<MyState> }) {
   )
 }
 
-// Parent: 创建 store 并传递
+// Parent: useStore 得 [snap, store]，把 store 传给子
 function ParentComponent() {
-  // 本地创建 store
   const [snap, store] = useStore({ count: 10, name: 'parent' })
-
-  // 将 store 自身传给子组件
   return <ChildComponent store={store} />
 }
+
+// 7. 常见错误：勿传普通对象给 useSnapshot/subscribe；集合勿用 key 名 "set"；派生须纯函数
 `,
   en: `import { type EnhancedStore, createStore, useStore } from '@empjs/valtio'
 
-// 1. Best Practice for Types: Use EnhancedStore<T>
+// 1. Read/Write Loop (must follow): Read from snap, write via store; never read store.xxx for render
+//    History store: read snap.value.xxx, write store.value.xxx; undo/redo via snap.undo()/snap.redo()
+// ------------------------------------------------------------------
+
+// 2. Types: Use EnhancedStore<T> (do not hand-write interface MyStore)
 // ------------------------------------------------------------------
 type MyState = { count: number; name: string }
-
-// BAD: Manual definition (Tedious, missing methods like set/reset)
-// interface MyStore { useSnapshot(): MyState; ... }
-
-// GOOD: All-in-one (Includes useSnapshot, set, reset, batch, subscribe...)
 type MyStore = EnhancedStore<MyState>
 
-
-// 2. Global Store
+// 3. Choice: Singleton/cross-component → createStore; per-instance in component → useStore
+// 4. Regular Store: createStore module-level; useStore returns [snap, store], supports lazy init
+// 5. Global Store
 // ------------------------------------------------------------------
-const globalStore = createStore({ count: 0, name: 'global' }) // Auto-inferred as EnhancedStore
+const globalStore = createStore({ count: 0, name: 'global' })
 
-
-// 3. Component Communication (Parent -> Child)
+// 6. Parent → Child
 // ------------------------------------------------------------------
 
-// Child: Receives EnhancedStore, can Read AND Write
+// Child: Receives EnhancedStore, read from snap, write via store
 function ChildComponent({ store }: { store: EnhancedStore<MyState> }) {
-  // Read: Types inferred automatically
   const snap = store.useSnapshot()
-
   return (
     <div>
       <p>Count: {snap.count}</p>
-      
-      {/* Write: Call store methods directly, type-safe */}
       <button onClick={() => store.count++}>+1</button>
       <button onClick={() => store.set('name', 'child')}>Change Name</button>
       <button onClick={() => store.reset({ count: 0, name: 'reset' })}>Reset</button>
@@ -86,14 +75,13 @@ function ChildComponent({ store }: { store: EnhancedStore<MyState> }) {
   )
 }
 
-// Parent: Create store and pass it down
+// Parent: useStore returns [snap, store], pass store to child
 function ParentComponent() {
-  // Create local store
   const [snap, store] = useStore({ count: 10, name: 'parent' })
-
-  // Pass the store itself to child
   return <ChildComponent store={store} />
 }
+
+// 7. Pitfalls: Pass proxy to useSnapshot/subscribe; do not use state key "set"; derive must be pure
 `,
 }
 

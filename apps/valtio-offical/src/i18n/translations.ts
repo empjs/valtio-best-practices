@@ -148,12 +148,23 @@ export const translations: Record<Locale, Record<string, string>> = {
     'performance.mouseMove': '在区域内移动鼠标',
     'performance.mousePos': '鼠标位置 (Ref)',
     'bestPractices.title': '最佳实战 (Best Practices)',
-    'bestPractices.intro': '基于项目经验总结的一套 TypeScript 类型定义与组件通信的最佳模式。',
-    'bestPractices.typeTitle': '1. 类型定义的最佳姿势',
-    'bestPractices.typeDesc': '不再手动定义 { useSnapshot(), ... } 接口，使用 EnhancedStore<T> 一步到位。',
-    'bestPractices.compTitle': '2. 组件通信的最佳姿势',
+    'bestPractices.intro': '按使用权重排序：调用闭环（必守）→ 类型与选型 → 常用用法 → 常见错误。',
+    'bestPractices.readWriteTitle': '1. 调用闭环（必守）',
+    'bestPractices.readWriteDesc': '读只用 snap（store.useSnapshot() 或 useStore 的 snap），不直接读 store.xxx 做渲染；写用 store 方法或 store.key = value。历史 store 读 snap.value、写 store.value.xxx。',
+    'bestPractices.typeTitle': '2. 类型定义：EnhancedStore<T>',
+    'bestPractices.typeDesc': '不手写 interface MyStore，用 EnhancedStore<MyState> 一步到位，含 useSnapshot、set、reset、batch、subscribe 等。',
+    'bestPractices.chooseTitle': '3. 选型：createStore vs useStore',
+    'bestPractices.chooseDesc': '单例/跨组件共享（主题、用户、全局计数）用 createStore；组件内每实例一份（表单、编辑器、画板）用 useStore。',
+    'bestPractices.regularTitle': '4. 常规 Store',
+    'bestPractices.regularDesc': 'createStore 模块级单例，读 useSnapshot() 写 set/update；useStore 组件内每实例独立，返回 [snap, store]，可惰性初始化。',
+    'bestPractices.globalTitle': '5. 全局 Store',
+    'bestPractices.globalDesc': 'createStore(initialState) 得到单例 EnhancedStore，跨组件共享。',
+    'bestPractices.compTitle': '6. 父传子通信',
     'bestPractices.compDesc':
-      '父组件创建局部 store，通过 props 传递给子组件。子组件使用 EnhancedStore 类型接收，既能读 (useSnapshot) 也能写 (set/reset)。',
+      '子组件 props 收 EnhancedStore<MyState>，store.useSnapshot() 读、store.set/reset/直接写 写；父组件 useStore 得 [snap, store]，把 store 传给子。',
+    'bestPractices.pitfallsTitle': '7. 常见错误与注意点',
+    'bestPractices.pitfallsDesc':
+      '勿传普通对象给 useSnapshot/subscribe（须传 proxy）；派生函数须为纯函数；集合状态勿用 key 名 "set"（与 store.set 冲突）。',
     'bestPractices.codeTitle': '完整实战示例',
   },
   en: {
@@ -319,12 +330,27 @@ export const translations: Record<Locale, Record<string, string>> = {
     'performance.mousePos': 'Mouse Pos (Ref)',
     'bestPractices.title': 'Best Practices',
     'bestPractices.intro':
-      'Optimal patterns for TypeScript definitions and component communication based on project experience.',
-    'bestPractices.typeTitle': '1. Type Definitions',
-    'bestPractices.typeDesc': 'Stop manually defining { useSnapshot(), ... } interfaces. Use EnhancedStore<T> instead.',
-    'bestPractices.compTitle': '2. Component Communication',
+      'Ordered by usage weight: read/write loop (must follow) → types & choice → common usage → common pitfalls.',
+    'bestPractices.readWriteTitle': '1. Read/Write Loop (Must Follow)',
+    'bestPractices.readWriteDesc':
+      'Read only from snap (store.useSnapshot() or useStore snap); never read store.xxx for render. Write via store methods or store.key = value. History store: read snap.value, write store.value.xxx.',
+    'bestPractices.typeTitle': '2. Types: EnhancedStore<T>',
+    'bestPractices.typeDesc':
+      'Do not hand-write interface MyStore; use EnhancedStore<MyState> for useSnapshot, set, reset, batch, subscribe, etc.',
+    'bestPractices.chooseTitle': '3. Choice: createStore vs useStore',
+    'bestPractices.chooseDesc':
+      'Singleton / cross-component (theme, user, global count) → createStore; per-instance in component (form, editor, canvas) → useStore.',
+    'bestPractices.regularTitle': '4. Regular Store',
+    'bestPractices.regularDesc':
+      'createStore: module-level singleton, read useSnapshot() write set/update. useStore: per-instance in component, returns [snap, store], supports lazy init.',
+    'bestPractices.globalTitle': '5. Global Store',
+    'bestPractices.globalDesc': 'createStore(initialState) returns a singleton EnhancedStore shared across components.',
+    'bestPractices.compTitle': '6. Parent → Child',
     'bestPractices.compDesc':
-      'Parent creates local store, passes to child via props. Child uses EnhancedStore type to receive it, enabling both read (useSnapshot) and write (set/reset).',
+      'Child receives EnhancedStore<MyState> via props; read with store.useSnapshot(), write with store.set/reset/direct assign. Parent uses useStore, passes store to child.',
+    'bestPractices.pitfallsTitle': '7. Common Pitfalls',
+    'bestPractices.pitfallsDesc':
+      'Pass proxy to useSnapshot/subscribe, not plain objects; derive must be pure; do not use state key "set" (conflicts with store.set).',
     'bestPractices.codeTitle': 'Full Real-world Example',
   },
 }
