@@ -106,11 +106,11 @@ export interface StoreBaseMethods<T extends object> {
 }
 
 /** 增强后的 Store 类型（State & Methods） */
-export type EnhancedStore<T extends object> = T & StoreBaseMethods<T>
+export type EmpStore<T extends object> = T & StoreBaseMethods<T>
 
 /** 增强 store，添加常用方法 */
-export function enhanceStore<T extends object>(store: T, initialState?: T): EnhancedStore<T> {
-  const enhanced = store as EnhancedStore<T>
+export function enhanceStore<T extends object>(store: T, initialState?: T): EmpStore<T> {
+  const enhanced = store as EmpStore<T>
 
   // 用闭包固定 store 引用，避免 "Please use proxy object" 错误
   enhanced.getSnapshot = function () {

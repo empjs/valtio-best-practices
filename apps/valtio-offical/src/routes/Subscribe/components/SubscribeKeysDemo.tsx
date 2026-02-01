@@ -1,9 +1,9 @@
-import {type EnhancedStore} from '@empjs/valtio'
+import {type EmpStore} from '@empjs/valtio'
 import {useEffect, useState} from 'react'
 import {useT} from 'src/i18n'
 
 interface SubscribeKeysProps {
-  store: EnhancedStore<{count: number; name: string}>
+  store: EmpStore<{count: number; name: string}>
   btn: string
 }
 

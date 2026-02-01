@@ -13,6 +13,10 @@ export const translations: Record<Locale, Record<string, string>> = {
     'nav.langSwitch': '切换语言',
     'nav.github': '在 GitHub 上查看',
     'app.skipToMain': '跳到主内容',
+    'app.footerNovaSkill': 'Nova Skill',
+    'app.footerNovaSkillIntro': 'AI Skill 平台：创建与发布可复用的领域技能、工作流与工具集成',
+    'app.footerEmpjs': 'EMPJS',
+    'app.footerEmpjsIntro': 'EMP 团队官网与前端生态（含 @empjs/valtio 等）',
     'app.footer': '© 2026 EMP Team. MIT License.',
     'home.heroTitle': 'Valtio Enhanced Store',
     'home.heroDesc': 'Valtio 的强大增强版 —— 更少样板代码，更高生产力',
@@ -154,13 +158,36 @@ export const translations: Record<Locale, Record<string, string>> = {
     'performance.mouseMove': '在区域内移动鼠标',
     'performance.mousePos': '鼠标位置 (Ref)',
     'bestPractices.title': '最佳实战 (Best Practices)',
-    'bestPractices.intro': '基于项目经验总结的一套 TypeScript 类型定义与组件通信的最佳模式。',
-    'bestPractices.typeTitle': '1. 类型定义的最佳姿势',
-    'bestPractices.typeDesc': '不再手动定义 { useSnapshot(), ... } 接口，使用 EnhancedStore<T> 一步到位。',
-    'bestPractices.compTitle': '2. 组件通信的最佳姿势',
-    'bestPractices.compDesc':
-      '父组件创建局部 store，通过 props 传递给子组件。子组件使用 EnhancedStore 类型接收，既能读 (useSnapshot) 也能写 (set/reset)。',
+    'bestPractices.intro':
+      '基于 @empjs/valtio 整理的调用闭环、类型与选型、常规/全局/组件通信与常见错误。',
+    'bestPractices.s1Title': '1. 调用闭环（必守）',
+    'bestPractices.s1Desc':
+      '读只用 snap（useSnapshot 或 useStore 的 snap），写用 store 方法（set、update、store.key）；历史 store 读 snap.value、写 store.value，撤销/重做用 snap.undo() / snap.redo()。',
+    'bestPractices.s2Title': '2. 类型定义：EmpStore<T>',
+    'bestPractices.s2Desc':
+      '用 EmpStore<T> 标注 store，不要手写 interface；createStore/useStore 返回的即 EmpStore。',
+    'bestPractices.s3Title': '3. 选型：createStore vs useStore',
+    'bestPractices.s3Desc': '单例、跨组件共享用 createStore；组件内每实例一份（表单、编辑器、画板）用 useStore。',
+    'bestPractices.s4Title': '4. 常规 Store',
+    'bestPractices.s4Desc':
+      'createStore 模块级单例，读 useSnapshot()、写 set/update；useStore 返回 [snap, store]，initialState 可为函数惰性初始化。',
+    'bestPractices.s5Title': '5. 全局 Store',
+    'bestPractices.s5Desc': '跨组件共享用 createStore，返回类型即 EmpStore<T>（自动推导）。',
+    'bestPractices.s6Title': '6. 组件通信（Parent → Child）',
+    'bestPractices.s6Desc':
+      '父 useStore 得 [snap, store]，把 store 传给子；子 props 收 EmpStore<MyState>，读 useSnapshot、写 set/reset 或 store.key。',
+    'bestPractices.s7Title': '7. 常见错误与注意点',
+    'bestPractices.s7Desc':
+      '传给 useSnapshot/subscribe 的必须是 proxy；derive 返回纯对象、勿写副作用；集合勿用 key 名 "set"。',
+    'bestPractices.callFlowDemoTitle': '调用闭环：读 snap，写 store',
+    'bestPractices.localStoreDemoTitle': '1.2 局部 Store：组件隔离',
+    'bestPractices.enhancedStoreMethods': '传导方法',
+    'bestPractices.localStoreDemoNote':
+      '每实例独立 useStore，状态互不干扰；store 为 EmpStore，具备 set / update / reset / useSnapshot 等传导方法。',
+    'bestPractices.compCommDemoTitle': '组件通信：Parent useStore → Child EmpStore',
     'bestPractices.codeTitle': '完整实战示例',
+    'bestPractices.codeTitle1': '调用闭环 + 类型/选型 + 常规 + 组件通信',
+    'bestPractices.codeTitle2': '常见错误与注意点',
   },
   en: {
     'nav.home': 'Home',
@@ -174,6 +201,11 @@ export const translations: Record<Locale, Record<string, string>> = {
     'nav.langSwitch': 'Switch language',
     'nav.github': 'View on GitHub',
     'app.skipToMain': 'Skip to main content',
+    'app.footerNovaSkill': 'Nova Skill',
+    'app.footerNovaSkillIntro':
+      'AI Skill platform: create and publish reusable domain skills, workflows and tool integrations',
+    'app.footerEmpjs': 'EMPJS',
+    'app.footerEmpjsIntro': 'EMP team site and frontend ecosystem (@empjs/valtio, etc.)',
     'app.footer': '© 2026 EMP Team. MIT License.',
     'home.heroTitle': 'Valtio Enhanced Store',
     'home.heroDesc': 'A powerful enhancement of Valtio — less boilerplate, more productivity.',
@@ -331,12 +363,35 @@ export const translations: Record<Locale, Record<string, string>> = {
     'performance.mousePos': 'Mouse Pos (Ref)',
     'bestPractices.title': 'Best Practices',
     'bestPractices.intro':
-      'Optimal patterns for TypeScript definitions and component communication based on project experience.',
-    'bestPractices.typeTitle': '1. Type Definitions',
-    'bestPractices.typeDesc': 'Stop manually defining { useSnapshot(), ... } interfaces. Use EnhancedStore<T> instead.',
-    'bestPractices.compTitle': '2. Component Communication',
-    'bestPractices.compDesc':
-      'Parent creates local store, passes to child via props. Child uses EnhancedStore type to receive it, enabling both read (useSnapshot) and write (set/reset).',
-    'bestPractices.codeTitle': 'Full Real-world Example',
+      'Call flow, types, createStore vs useStore, regular/global store, parent–child communication, and common pitfalls.',
+    'bestPractices.s1Title': '1. Call flow (required)',
+    'bestPractices.s1Desc':
+      'Read only from snap (useSnapshot or useStore snap); write via store methods (set, update, store.key). History store: read snap.value, write store.value; undo/redo via snap.undo() / snap.redo().',
+    'bestPractices.s2Title': '2. Types: EmpStore<T>',
+    'bestPractices.s2Desc':
+      'Use EmpStore<T> for store types; do not hand-write interfaces; createStore/useStore return EmpStore.',
+    'bestPractices.s3Title': '3. Choice: createStore vs useStore',
+    'bestPractices.s3Desc':
+      'Singleton, shared across components: createStore; per-instance state (forms, editors, canvas): useStore.',
+    'bestPractices.s4Title': '4. Regular store',
+    'bestPractices.s4Desc':
+      'createStore: module-level singleton, read useSnapshot(), write set/update; useStore returns [snap, store], initialState can be a function for lazy init.',
+    'bestPractices.s5Title': '5. Global store',
+    'bestPractices.s5Desc': 'Use createStore for cross-component sharing; return type is EmpStore<T> (inferred).',
+    'bestPractices.s6Title': '6. Component communication (Parent → Child)',
+    'bestPractices.s6Desc':
+      'Parent useStore to get [snap, store], pass store to child; child props receive EmpStore<MyState>, read via useSnapshot, write via set/reset or store.key.',
+    'bestPractices.s7Title': '7. Common pitfalls',
+    'bestPractices.s7Desc':
+      'Pass only proxy to useSnapshot/subscribe; derive must return plain object, no side effects; do not use key name "set" for collections.',
+    'bestPractices.callFlowDemoTitle': 'Call flow: read snap, write store',
+    'bestPractices.localStoreDemoTitle': '1.2 Local Store: Component isolation',
+    'bestPractices.enhancedStoreMethods': 'Conduction methods',
+    'bestPractices.localStoreDemoNote':
+      'Each instance uses useStore independently; state is isolated. Store is EmpStore with set, update, reset, useSnapshot.',
+    'bestPractices.compCommDemoTitle': 'Component communication: Parent useStore → Child EmpStore',
+    'bestPractices.codeTitle': 'Full example',
+    'bestPractices.codeTitle1': 'Call flow + types/choice + regular + component communication',
+    'bestPractices.codeTitle2': 'Common pitfalls',
   },
 }

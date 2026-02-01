@@ -1,9 +1,9 @@
-import {type EnhancedStore} from '@empjs/valtio'
+import {type EmpStore} from '@empjs/valtio'
 import {useT} from 'src/i18n'
 import {OnlyCount, OnlyName} from './DemoComponents'
 
 interface SubscribeBatchProps {
-  store: EnhancedStore<{count: number; name: string}>
+  store: EmpStore<{count: number; name: string}>
   renderLabel: string
   btn: string
 }

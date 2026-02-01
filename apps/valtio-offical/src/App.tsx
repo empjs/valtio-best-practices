@@ -58,22 +58,30 @@ const App = () => {
           </Switch>
         </main>
         <footer className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-          <div className="mb-2 flex justify-center gap-4">
+          <div className="mb-2 flex flex-wrap justify-center gap-6">
             <a
               href="https://skill.empjs.dev/"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+              className="group inline-block transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+              title={t('app.footerNovaSkillIntro')}
             >
-              Nova Skill
+              <span className="font-medium">{t('app.footerNovaSkill')}</span>
+              <span className="ml-1.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300">
+                — {t('app.footerNovaSkillIntro')}
+              </span>
             </a>
             <a
               href="https://empjs.dev/"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+              className="group inline-block transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+              title={t('app.footerEmpjsIntro')}
             >
-              EMPJS
+              <span className="font-medium">{t('app.footerEmpjs')}</span>
+              <span className="ml-1.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300">
+                — {t('app.footerEmpjsIntro')}
+              </span>
             </a>
           </div>
           {t('app.footer')}

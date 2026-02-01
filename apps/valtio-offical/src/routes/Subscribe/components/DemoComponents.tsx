@@ -1,4 +1,4 @@
-import {type EnhancedStore} from '@empjs/valtio'
+import {type EmpStore} from '@empjs/valtio'
 import {useRef} from 'react'
 
 const cardChip =
@@ -9,7 +9,7 @@ export function OnlyCount({
   store,
   renderLabel,
 }: {
-  store: EnhancedStore<{count: number; name: string}>
+  store: EmpStore<{count: number; name: string}>
   renderLabel: string
 }) {
   const snap = store.useSnapshot()
@@ -31,7 +31,7 @@ export function OnlyName({
   store,
   renderLabel,
 }: {
-  store: EnhancedStore<{count: number; name: string}>
+  store: EmpStore<{count: number; name: string}>
   renderLabel: string
 }) {
   const snap = store.useSnapshot()

@@ -1,6 +1,6 @@
 # @empjs/valtio 最佳实践
 
-根据 [empjs-valtio Skill](../SKILL.md) 整理。按使用权重排序：调用闭环（必守）→ 类型与选型 → 常用用法 → 常见错误。每节与 SKILL 对应，含要点与简短示例。
+根据 [empjs-valtio Skill](../SKILL.md) 整理。调用闭环（必守）→ 类型与选型 → 常用用法 → 常见错误。每节与 SKILL 对应，含要点与简短示例。
 
 ---
 
@@ -27,9 +27,9 @@ snap.undo()
 
 ---
 
-## 2. 类型定义：使用 EnhancedStore\<T\>
+## 2. 类型定义：使用 EmpStore\<T\>
 
-对应 SKILL「类型与组件通信」之类型。用 `EnhancedStore<T>` 表示「状态 + 增强方法」，不要手写 `interface MyStore { useSnapshot(): ...; set(): ... }`；`createStore` / `useStore` 返回的 store 即 `EnhancedStore`。
+对应 SKILL「类型与组件通信」之类型。用 `EmpStore<T>` 表示「状态 + 增强方法」，不要手写 `interface MyStore { useSnapshot(): ...; set(): ... }`；`createStore` / `useStore` 返回的 store 即 `EmpStore`。
 
 **不推荐**：手写接口，容易漏掉 `set`、`reset`、`useSnapshot` 等方法。
 
@@ -41,13 +41,13 @@ interface MyStore {
 }
 ```
 
-**推荐**：用 `EnhancedStore<T>` 一步到位，包含 `useSnapshot`、`set`、`reset`、`batch`、`subscribe` 等全部增强方法。
+**推荐**：用 `EmpStore<T>` 一步到位，包含 `useSnapshot`、`set`、`reset`、`batch`、`subscribe` 等全部增强方法。
 
 ```ts
-import { type EnhancedStore, createStore, useStore } from '@empjs/valtio'
+import { type EmpStore, createStore, useStore } from '@empjs/valtio'
 
 type MyState = { count: number; name: string }
-type MyStore = EnhancedStore<MyState>
+type MyStore = EmpStore<MyState>
 ```
 
 ---
@@ -82,25 +82,25 @@ const [snap, store] = useStore(() => ({ count: 0 }))
 
 ## 5. 全局 Store（Global）
 
-对应 SKILL「类型与组件通信」之全局 Store。跨组件共享时用 `createStore`，返回类型即 `EnhancedStore<T>`（自动推导）。
+对应 SKILL「类型与组件通信」之全局 Store。跨组件共享时用 `createStore`，返回类型即 `EmpStore<T>`（自动推导）。
 
 ```ts
 const globalStore = createStore({ count: 0, name: 'global' })
-// 类型为 EnhancedStore<{ count: number; name: string }>
+// 类型为 EmpStore<{ count: number; name: string }>
 ```
 
 ---
 
 ## 6. 组件通信（Parent → Child）
 
-对应 SKILL「类型与组件通信」之父传子。子组件 props 收 `EnhancedStore<MyState>`，内部用 `store.useSnapshot()` 读、`store.set` / `store.reset` / 直接写 `store.key` 写；父组件 `useStore(...)` 得到 `[snap, store]`，把 `store` 传给子组件即可。
+对应 SKILL「类型与组件通信」之父传子。子组件 props 收 `EmpStore<MyState>`，内部用 `store.useSnapshot()` 读、`store.set` / `store.reset` / 直接写 `store.key` 写；父组件 `useStore(...)` 得到 `[snap, store]`，把 `store` 传给子组件即可。
 
-**子组件**：props 接收 `EnhancedStore<MyState>`，既能读（`store.useSnapshot()`）也能写（`store.set`、`store.reset`、`store.count++` 等）。
+**子组件**：props 接收 `EmpStore<MyState>`，既能读（`store.useSnapshot()`）也能写（`store.set`、`store.reset`、`store.count++` 等）。
 
 **父组件**：用 `useStore` 创建局部 store，得到 `[snap, store]`，将 `store` 传给子组件。
 
 ```ts
-function ChildComponent({ store }: { store: EnhancedStore<MyState> }) {
+function ChildComponent({ store }: { store: EmpStore<MyState> }) {
   const snap = store.useSnapshot()
   return (
     <div>
