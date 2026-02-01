@@ -1,4 +1,10 @@
+<img src="./docs/valtio.png"/>
+
 # valtio-best-practices
+
+[![npm](https://img.shields.io/npm/v/@empjs/valtio)](https://www.npmjs.com/package/@empjs/valtio)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub stars](https://img.shields.io/github/stars/empjs/valtio-best-practices)](https://github.com/empjs/valtio-best-practices)
 
 基于 [Valtio](https://github.com/pmndrs/valtio) 的增强状态库与最佳实践：在保留 Valtio 细粒度响应式与快照语义的前提下，提供更少的样板代码和开箱即用的高级能力（历史、派生、持久化、嵌套更新等）。
 

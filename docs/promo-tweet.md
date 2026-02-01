@@ -1,47 +1,86 @@
-# @empjs/valtio 让 Valtio 开箱即用、少写一半代码
+# @empjs/valtio：Valtio 的生产级增强——单包收束全部写入口与能力扩展
 
-**@empjs/valtio** 是 [Valtio](https://github.com/pmndrs/valtio) 的增强版状态库：在保留细粒度响应式与快照语义的前提下，单包内建 **createStore / useStore**、**17 个 Store 方法**、历史回溯、派生状态、持久化、createMap/createSet；典型场景减少约 40%～50% 样板，接入步骤从多步收敛为一步。
-
-微前端友好：子应用可独立 `useStore`，主机通过 **props 传 store** 即可与远程组件共享状态，无需 Context 与事件总线。下文以产品能力为中心，用代码展示用法与效果。
+> **@empjs/valtio** 在保留 Valtio 细粒度响应式与快照语义的核心的前提下，单包内建 `createStore` / `useStore`、**17 个 Store 方法**、历史回溯、派生状态、持久化、集合类型；典型场景样板代码量减少 **40%～50%**，"全局 store + 读写 + 历史/派生/持久化"的接入路径从 **4～5 步收敛为 1 步**。微前端场景下子应用可通过 **props 传导 store**，无需事件总线与全局单例耦合。
 
 ---
 
 ## 目录
 
-- [从原版 Valtio 到增强 Store](#从原版-valtio-到增强-store)
-- [量化对比](#量化对比)
-- [调用闭环：读 snap、写 store](#调用闭环读-snap写-store)
-- [局部 Store 与多实例](#局部-store-与多实例)
-- [微前端与 props 传导](#微前端与-props-传导)
-- [最佳实战](#最佳实战参考官网实战页)
-- [总结](#总结)
+0. [背景：为什么 Valtio，为什么需要增强](#0-背景)
+1. [核心对比：原版 Valtio vs @empjs/valtio](#1-核心对比)
+2. [调用闭环——响应式的硬约束](#2-调用闭环)
+3. [Store 能力图谱：17 个方法分类详解](#3-store-能力图谱)
+4. [全局 Store 与局部 Store 的选择](#4-全局-store-与局部-store)
+5. [微前端与 props 传导](#5-微前端与-props-传导)
+6. [常见错误避雷](#6-常见错误避雷)
+7. [场景矩阵：快速选型](#7-场景矩阵)
 
 ---
 
-## 从原版 Valtio 到增强 Store
+## 0. 背景
 
-### 原版 Valtio：最少可用写法
+### 0.1 React 状态管理的演变
 
-原版 Valtio 只提供 `proxy` 与 `useSnapshot`。要实现「全局 store + 组件内读 snap + 写」必须自己把 proxy 包一层，否则写操作分散在业务里，难以统一约束——例如要做持久化、历史、batch 时就要到处改。
+React 生态的状态管理库按核心机制可归为三类：
+
+| 范式 | 代表库 | 核心机制 | 典型特征 |
+|------|--------|----------|----------|
+| **Reducer 型** | Redux / Redux Toolkit | 不可变状态 + 动作分发 + Reducer 纯函数 | 可预测、可调试、样板多；适合大型团队协作 |
+| **Atom 型** | Jotai / Recoil | 细粒度原子状态 + 依赖图自动追踪 | 按原子粒度重渲染；适合状态互依复杂的场景 |
+| **Proxy 型** | MobX / **Valtio** | 可变 Proxy + 自动订阅 | 代码最接近原生 JS 对象操作；样板最少 |
+
+Reducer 型长期占据主导，但随着项目规模分化，开发者对样板代码和学习曲线的容忍度急剧下降。Zustand（约 1KB）的崛起证明了「极小 API + 较少约束」对中小项目的吸引力；而 Valtio 则走得更远——它完全省掉了 action/reducer/selector 等概念，让状态变更看起来就像普通 JS 对象赋值。
+
+### 0.2 Valtio 的设计哲学
+
+Valtio 由 pmndrs（poimandres，开源集体，同为 Zustand、react-three-fiber 等库的作者）创建，核心理念是：
+
+**"让 Proxy 状态对 React 开发者透明。"**
+
+它只暴露两个核心 API：
+- `proxy(initialState)` — 创建响应式状态对象；写入即像普通对象赋值 `state.count++`
+- `useSnapshot(state)` — 在组件内获取当前快照，参与 React 的依赖收集与重渲染
+
+这种设计带来了显著优势：组件只需访问自己用到的属性就能自动获得精细粒度的重渲染优化（基于 `proxy-compare` 的访问追踪），无需手写 selector。与此同时，状态变更可以发生在任何地方——事件处理器、定时器、异步函数——无需经过固定的分发机制。
+
+### 0.3 Valtio 的能力边界与增强的契机
+
+Valtio 的极简主义是双刃剑。它刻意只提供「构建块」而非「完整框架」：
+
+- **没有统一的写入口。** 原版鼓励直接 `state.xxx = value`，但一旦团队规模增大，写操作散落在业务代码各处，历史追踪、持久化、批量更新等横截面能力就无法统一拦截。
+- **没有内建的 store 对象。** `proxy` 返回的是裸状态，要做到「读写闭环」需要开发者自己封装 set/update 工具函数并与 proxy 绑定。
+- **历史、派生、持久化均需外接。** 要实现撤销/重做需安装 `valtio-history`，派生状态需 `derive-valtio`，持久化需自写 localStorage 逻辑——每个能力都是独立的接入步骤。
+- **多实例场景繁琐。** 原版没有针对「每组件实例拥有独立状态」的原生支持，需要借助 `useRef(proxy(...))` + Context 手动传导，容易漏掉清理逻辑。
+
+这些不是 Valtio 的设计缺陷，而是其极简定位的自然边界。**@empjs/valtio 的增强正是在这些边界之外，以 Valtio 的 proxy + snapshot 机制为基础，补齐写入口、能力扩展和多实例工作流。**
+
+---
+
+## 1. 核心对比
+
+### 1.1 同一需求，两种写法
+
+以「全局计数器」为例，放置在同一屏幕内对比写法差异。
+
+**原版 Valtio：** proxy 裸导出，写入口需自手动封装，组件内每次都要同时 import `proxy` 对象和 `useSnapshot`。
 
 ```tsx
-// 原版 Valtio：至少需要这些
+// 原版 Valtio
 import { proxy } from 'valtio'
 import { useSnapshot } from 'valtio'
 
 const state = proxy({ count: 0, name: '' })
 
-// 写操作要么直接改 proxy（业务里散落 state.count++）
-// 要么自己封装 set/update，否则后续加 persist/history 要改无数处
-function set(key: keyof typeof state, value: unknown) {
-  (state as Record<string, unknown>)[key] = value
+// 没有统一写入口，需自封装
+function set<K extends keyof typeof state>(key: K, value: typeof state[K]) {
+  state[key] = value
 }
 function update(partial: Partial<typeof state>) {
   Object.assign(state, partial)
 }
 
 function Counter() {
-  const snap = useSnapshot(state)  // 必须记得：读只用 snap，不能读 state
+  const snap = useSnapshot(state)
   return (
     <div>
       <span>{snap.count}</span>
@@ -49,18 +88,11 @@ function Counter() {
     </div>
   )
 }
+// 总行数：约 14 行（含 import、自封装、组件）
+// 若需历史/派生/持久化：需额外安装 valtio-history、derive-valtio，自写 persist 逻辑
 ```
 
-**原版痛点：**
-
-- store 形态是裸 proxy，没有统一「写入口」
-- set/update 要自己写并和 proxy 绑在一起
-- 每个用到 store 的组件都要单独 import useSnapshot 和 state
-- 若要做历史、派生、持久化，需再接 valtio-history、derive-valtio 并自写 persist，接入步骤多、易漏
-
-### @empjs/valtio：同一需求的写法
-
-同一需求下，增强库把「创建 + 读快照 + 写入口」收束为一个 store 对象，组件只依赖「从哪拿 snap、从哪写」即可。
+**@empjs/valtio：** `createStore` 将「创建 + 写入口 + 读快照」收束为一个对象。
 
 ```tsx
 // @empjs/valtio
@@ -77,82 +109,151 @@ function Counter() {
     </div>
   )
 }
+// 总行数：约 7 行（含 import、createStore、组件）
+// 历史/派生/持久化：无需额外安装，见下节
 ```
 
-**产品能力：**
+### 1.2 量化对比表
 
-- store 即「状态 + 读/写 API」一体，set/update/reset/persist 等全在 store 上，加能力不改业务调用点
-- 组件内只认 store 与 snap，闭环清晰：读用 snap、写用 store
-- 原版需 10+ 行自封装的边界，这里约 6 行达成，样板减少约 40%～50%，类型由 createStore 推断，无需手写 set 签名
+| 维度 | 原版 Valtio | @empjs/valtio | 说明 |
+|------|:-----------:|:-------------:|------|
+| **最小可用写法行数**（全局 store + 读写） | ~14 行 | ~7 行 | 含 import、状态定义、组件；原版需自封装 `set`/`update` |
+| **Store 自带方法数** | 0 | **17** | 见 §3 方法分类表 |
+| **接入历史+派生+持久化** | 4～5 步 | **1 步** | 原版：① npm install valtio-history ② npm install derive-valtio ③ 手写 persist 逻辑 ④ 在组件/模块内分别接入各插件 ⑤ 手动维护撤销/重做调用；增强版：`createStore(init, { history, derive })` + `store.persist(key)` |
+| **类型推断** | 需手写 `set` 签名 | 自动推断，零手写 | `createStore` 泛型链完整推导键与值类型 |
+| **多实例状态隔离** | 需手动 `new` 多个 proxy + context/props 传导 | `useStore()` 每实例自动独立 | 生命周期与组件实例绑定 |
 
----
+### 1.3 历史 + 派生 + 持久化：一步到位
 
-## 量化对比
-
-| 维度 | 原版 Valtio | @empjs/valtio | 代码依据 |
-|------|-------------|----------------|----------|
-| **「全局 store + 读 + 写」行数** | 约 10～14 行（proxy + 自封装 set/update + 组件内 useSnapshot） | 约 5～7 行（createStore + 组件内 useSnapshot + store.set） | 见上一节两段代码 |
-| **Store 自带方法数** | 0（需自封装） | **17**（getSnapshot、useSnapshot、subscribe、subscribeKey、subscribeKeys、set、update、setNested、delete、reset、ref、batch、clone、toJSON、fromJSON、persist、debug） | 见 `StoreBaseMethods<T>` |
-| **历史 + 派生 + 持久化** | 安装 valtio-history、derive-valtio，自写 persist 与封装，约 4～5 步 | **1 步**：`createStore(init, { history, derive })` + `store.persist(key)` | 见下段代码 |
-
-**能力收口：** 历史、派生、持久化通过「一个 createStore + options」和「store 上的方法」一次到位，步骤从 4～5 步降为 1 步，可维护性与一致性更强。
+原版需安装并分别接入至少 3 个包/逻辑，@empjs/valtio 通过 `createStore` 的 `options` 参数和 store 方法一次激活。
 
 ```tsx
-// @empjs/valtio：历史 + 派生 + 持久化 一次到位
 const store = createStore(
   { firstName: '', lastName: '' },
   {
-    history: { limit: 50 },
+    history: { limit: 50 },                       // 开启历史，保留最近 50 步
     derive: (get, proxy) => ({
       fullName: `${get(proxy).firstName} ${get(proxy).lastName}`.trim(),
-    }),
+    }),                                            // 派生状态，自动响应变化
   }
 )
-store.persist('user-form')
-// 组件内：snap.value、snap.undo/redo、derived.useSnapshot() 等均已可用
+store.persist('user-form')                         // 持久化，一行搞定
+
+// 组件内使用：
+// 读当前值        → snap.value.firstName
+// 写入新值        → store.value.firstName = 'Alice'
+// 撤销/重做       → snap.undo() / snap.redo()
+// 读派生值        → derived.useSnapshot().fullName
 ```
 
 ---
 
-## 调用闭环：读 snap、写 store
+## 2. 调用闭环
 
-Valtio 的响应式建立在「对 proxy 的读」上。在 React 里若用 `useSnapshot(store)`，只有对 **返回的 snap** 的读会参与依赖收集，直接读 `store.xxx` 做渲染不会触发订阅更新。
+> **核心规则：读用 snap，写用 store。** 这是响应式系统的硬约束，不是代码风格建议。
 
-因此 **「读用 snap、写用 store」** 是硬约束，不是风格问题。
+Valtio 的响应式依赖 React 对 `useSnapshot` 返回值的读操作来进行依赖收集。直接在渲染中读取 `store.xxx` **不会**触发重渲染。
 
 ```tsx
-// ❌ 错误：读 store 做渲染，不会触发重渲染
+// ❌ 错误：读 store 不参与订阅，不会触发重渲染
 function Bad() {
-  const snap = store.useSnapshot()
-  return <span>{store.count}</span>  // 应读 snap.count
+  store.useSnapshot()                        // 调用了 hook，但未使用返回值读数据
+  return <span>{store.count}</span>         // 读的是 proxy，不是 snap
 }
 
-// ✅ 正确：读 snap、写 store
+// ✅ 正确：读 snap，写 store
 function Good() {
   const snap = store.useSnapshot()
   return (
     <>
-      <span>{snap.count}</span>
-      <button onClick={() => store.set('count', snap.count + 1)}>+1</button>
+      <span>{snap.count}</span>                                  {/* 读 snap */}
+      <button onClick={() => store.set('count', snap.count + 1)}>  {/* 写 store */}
+        +1
+      </button>
     </>
   )
 }
 ```
 
-@empjs/valtio 的 Store 类型把「可读快照」与「可写方法」放在同一对象上，通过文档与类型约束「读用 useSnapshot() 的返回值、写用 store 的方法」，子组件只要收到 `EmpStore<T>`，就能在类型层面统一可写入口，避免误用。
+**历史 store 下的闭环规则**也一致，仅多了一层 `.value` 包裹：
 
-**类型设计建议：** `const initialState = { ... }` → `type State = typeof initialState` → `export type Store = EmpStore<State>`，子组件只依赖 `Store`，改形状只改 initialState 一处。
+| 操作 | 写法 |
+|------|------|
+| 读当前状态 | `snap.value.xxx` |
+| 写入状态 | `store.value.xxx = newVal` |
+| 撤销 | `snap.undo()` |
+| 重做 | `snap.redo()` |
+
+**类型层面的约束设计：** 子组件 props 声明为 `EmpStore<State>`，则只能通过 store 上的方法写入，无法绕过闭环。推荐写法如下：
+
+```tsx
+import { type EmpStore } from '@empjs/valtio'
+
+const initialState = { count: 0, name: '' }
+type State = typeof initialState
+export type Store = EmpStore<State>   // 子组件只依赖此类型
+// 改变状态结构 → 只需修改 initialState，类型自动同步
+```
 
 ---
 
-## 局部 Store 与多实例
+## 3. Store 能力图谱
 
-在表单、编辑器、画板等场景，同一组件会挂多个实例，每个实例应有独立状态。若用「全局单例 store」，要么为每个实例手动 new 一个 store 再通过 props 或 context 传下去（繁琐且易漏），要么误用同一个 store 导致多实例共享状态。
+`createStore` / `useStore` 返回的对象内建 **17 个方法**，分为以下四类：
 
-使用 **useStore(initialState)** 即可：每个组件实例拥有从 initialState 派生的 store，生命周期与实例绑定，卸载即释放。
+### 3.1 读取
+
+| 方法 | 用途 |
+|------|------|
+| `useSnapshot()` | React Hook，返回当前快照，参与依赖收集 |
+| `getSnapshot()` | 非 Hook 场景读取快照（如事件回调、工具函数） |
+| `toJSON()` | 序列化当前状态为纯对象 |
+
+### 3.2 写入
+
+| 方法 | 用途 |
+|------|------|
+| `set(key, value)` | 设置单个键值 |
+| `update(partial)` | 合并部分状态（浅合并） |
+| `setNested(path, value)` | 深路径写入，如 `store.setNested('a.b.c', 1)` |
+| `delete(key)` | 删除某个键 |
+| `reset(initialState?)` | 重置为初始状态或指定状态 |
+| `fromJSON(json)` | 从序列化对象恢复状态 |
+
+### 3.3 订阅
+
+| 方法 | 用途 |
+|------|------|
+| `subscribe(callback)` | 监听整体状态变化 |
+| `subscribeKey(key, callback)` | 监听单个键变化 |
+| `subscribeKeys(keys, callback)` | 监听多个键变化 |
+
+### 3.4 工具
+
+| 方法 | 用途 |
+|------|------|
+| `ref(value)` | 标记为非响应式引用（如 DOM 节点、第三方实例） |
+| `batch(fn)` | 批量执行多次写入，仅触发一次更新 |
+| `clone()` | 深拷贝当前状态为新对象 |
+| `persist(key)` | 启用 localStorage 持久化 |
+| `debug()` | 开启控制台状态变更日志 |
+
+---
+
+## 4. 全局 Store 与局部 Store
+
+### 选择依据
+
+| 场景特征 | 使用方式 | 示例场景 |
+|----------|----------|----------|
+| 单例、跨组件共享 | `createStore(init)` | 主题配置、当前用户、全局计数 |
+| 每实例独立状态 | `useStore(init)` | 表单、编辑器、画板 |
+
+### useStore：每实例自动隔离
+
+`useStore` 在每个组件实例挂载时独立创建 store，卸载时自动释放，无需在模块层维护实例数组或 Map。
 
 ```tsx
-// @empjs/valtio：每实例独立，无需手动建多个 store
 function FormBlock({ initialLabel }: { initialLabel: string }) {
   const [snap, store] = useStore({ count: 0, label: initialLabel })
   return (
@@ -164,44 +265,50 @@ function FormBlock({ initialLabel }: { initialLabel: string }) {
   )
 }
 
-// 使用：两个实例状态完全隔离
+// 两个实例，状态完全隔离
 <FormBlock initialLabel="A" />
 <FormBlock initialLabel="B" />
 ```
 
-**效果：** 无需在模块层维护多实例数组或 Map，无全局单例复用导致的状态串扰，尤其适合微前端下各子应用「各自一份局部状态」。
+`initialState` 支持传入函数实现**惰性初始化**，适合初始值需要异步获取或计算代价较高的场景：
+
+```tsx
+const [snap, store] = useStore(() => ({ count: expensiveCompute() }))
+```
 
 ---
 
-## 微前端与 props 传导
+## 5. 微前端与 props 传导
 
-微前端下常见问题：子应用/远程组件若依赖主机提供的「全局单例 store」，则与主机强耦合、版本与构建顺序敏感；若用事件总线或 postMessage 同步状态，类型弱、边界模糊、调试难。
+### 问题背景
 
-**做法：** 把 store 当普通 props 从主机传到子/远程组件即可。
+| 常见做法 | 缺陷 |
+|----------|------|
+| 子应用依赖主机全局单例 store | 主客耦合强，版本与构建顺序敏感 |
+| 事件总线 / postMessage 同步 | 类型弱、边界模糊、调试链路长 |
+| Context 层层传递 | 构建边界跨越时 Context 断裂 |
 
-- 子组件不关心「谁创建的 store」，只依赖类型 `EmpStore<State>`
-- 主机与子应用之间只需「传一个 store 引用」，无全局单例、无事件名约定
-- 子应用内部仍可用自己的 `useStore` 做局部状态，与主机下发的 store 泾渭分明
+### 解决方案：store 当 props 传导
 
-下面用代码展示「主机持有 store，通过 props 传给远程组件」的形态；类型用 `typeof initialState` + `export type Store = EmpStore<State>`，子组件只消费 `Store`，便于独立构建与类型检查。
+主机持有 store，通过普通 props 传入子/远程组件。子组件仅依赖类型 `EmpStore<State>`，不关心 store 由谁创建。
 
 ```tsx
-// 主机或共享层：定义初始状态与 Store 类型，导出类型供子应用使用
+// ─── 共享类型定义（可放入共享包，供主客双方引用） ───
+import { type EmpStore } from '@empjs/valtio'
+
 const initialState = { count: 10, name: 'parent', loading: false }
 type State = typeof initialState
 export type Store = EmpStore<State>
 
-// 主机侧：createStore 或 useStore 得到 store，通过 props 传给远程/子组件
+// ─── 主机侧 ───
+import { useStore } from '@empjs/valtio'
+
 function Host() {
   const [snap, store] = useStore<State>(initialState)
-  return (
-    <div>
-      <RemoteChild store={store} />
-    </div>
-  )
+  return <RemoteChild store={store} />   // store 作为普通 prop 传入
 }
 
-// 远程/子应用组件：只依赖 Store 类型，不依赖主机实现
+// ─── 远程/子应用组件（独立构建，仅依赖 Store 类型） ───
 function RemoteChild({ store }: { store: Store }) {
   const snap = store.useSnapshot()
   return (
@@ -215,163 +322,70 @@ function RemoteChild({ store }: { store: Store }) {
 }
 ```
 
-**能力总结：**
+### 微前端场景下的状态层次
 
-- **局部独立**：子应用内部 `useStore(...)` 即得独立 store，不碰主机单例
-- **props 传导**：主机把 store 当 prop 传入，子组件收 `store: Store` 即可读 snap、写 set/update/reset
-- **类型边界清晰**：子应用只依赖共享的 `State`/`Store` 类型（可来自共享包或类型导出），不依赖主机运行时，适合 Module Federation 的独立部署与按需加载
+```
+主机
+├── 全局 store（createStore）→ 主题、用户会话 → 通过 props 传入子应用
+└── 子应用 A
+    ├── 接收主机下发的 store（props）→ 读写共享状态
+    └── 自身局部 store（useStore）→ 子应用内部表单/编辑器等
+```
+
+**关键优势：**
+- 子应用无需感知主机运行时，仅依赖共享的类型定义
+- 适合 Module Federation 下独立部署与按需加载
+- 局部与共享状态泾渭分明，无全局单例污染
 
 ---
 
-## 最佳实战（参考官网「实战」页）
+## 6. 常见错误避雷
 
-官网 [valtio.empjs.dev](https://valtio.empjs.dev/) 的「实战」页按实践优先级整理了七条：调用闭环（必守）→ 类型与选型 → 常规/全局/组件通信 → 常见错误。**具体 API 与带注释代码**见「使用」页：[valtio.empjs.dev/manual](https://valtio.empjs.dev/manual)。
-
-下面逐条展开并辅以代码。
-
-### 1. 调用闭环（必守）
-
-每次写组件都要遵守：**读只用 snap，写用 store 方法**；否则订阅不更新。
-
-历史 store 下：读用 `snap.value.xxx`，写用 `store.value.xxx`，撤销/重做用 `snap.undo()` / `snap.redo()`。
+| 错误 | 现象 | 正确做法 |
+|------|------|----------|
+| 渲染时读 `store.xxx` 而非 `snap.xxx` | 状态更新后组件不重渲染 | 始终读 `useSnapshot()` 的返回值 |
+| 传非 proxy 对象给 `useSnapshot`/`subscribe` | 控制台报 "Please use proxy object" | 确保传入的是 `createStore`/`useStore` 返回的 store |
+| 键名使用 `set` | 与 `store.set(key, value)` 方法冲突，行为异常 | 换用其他键名，如 `tagSet` |
+| 在 `derive` 中写副作用 | 派生状态行为不可预测 | `derive` 回调仅返回纯对象，不执行 IO/修改外部状态 |
 
 ```tsx
-// 常规：读 snap，写 store
-const snap = store.useSnapshot()
-return <span>{snap.count}</span>
-store.set('count', snap.count + 1)
-store.update({ name: 'Alice' })
-
-// 历史 store：读 snap.value，写 store.value
-const snap = store.useSnapshot()
-return <span>{snap.value.count}</span>
-store.value.count = snap.value.count + 1
-snap.undo()
-```
-
-### 2. 类型：EmpStore\<T\>
-
-用 `EmpStore<T>` 标注「状态 + 增强方法」，不要手写一长串 interface，易漏方法。
-
-推荐：`const initialState = { ... }` → `type State = typeof initialState` → `export type Store = EmpStore<State>`，改形状只改 initialState 一处，子组件 props 用 `Store`。
-
-```tsx
-import { type EmpStore, createStore, useStore } from '@empjs/valtio'
-
-const initialState = { count: 0, name: '' }
-type State = typeof initialState
-export type Store = EmpStore<State>
-```
-
-### 3. 选型：createStore vs useStore
-
-| 场景 | 使用 |
-|------|------|
-| 单例、跨组件共享（主题、用户、全局计数） | `createStore(initialState, options?)` |
-| 组件内独立状态、每实例一份（表单、编辑器、画板） | `useStore(initialState, options?)` |
-
-### 4. 常规 Store
-
-- **createStore**：模块级单例，跨组件共享。读用 `store.useSnapshot()`，写用 `store.set` / `store.update`。
-- **useStore**：组件内每实例独立，返回 `[snap, store]`，读用 snap、写用 store；`initialState` 可为函数实现惰性初始化。
-
-```tsx
-// 全局单例
-const store = createStore({ count: 0, name: '' })
-
-// 组件内每实例（局部）
-const [snap, localStore] = useStore({ count: 0 })
-// 惰性初始化
-const [snap, localStore] = useStore(() => ({ count: 0 }))
-```
-
-### 5. 全局 Store
-
-跨组件共享时用 `createStore`，返回类型即 `EmpStore<T>`（自动推导），无需再手写类型。
-
-```tsx
-const globalStore = createStore({ count: 0, name: 'global' })
-// 类型为 EmpStore<{ count: number; name: string }>
-```
-
-### 6. 组件通信（Parent → Child）
-
-父组件 `useStore<State>(initialState)` 得 `[snap, store]`，将 **store 通过 props 传给子组件**；子组件 props 收 `Store`（即 `EmpStore<State>`），内部 `store.useSnapshot()` 读、`store.set` / `store.reset` 写。
-
-initialState 可含异步方法，`this` 指向 store，便于封装请求与 loading 状态。
-
-```tsx
-const initialState = {
-  count: 10,
-  name: 'parent',
-  loading: false,
-  async fetchUser() {
-    this.loading = true
-    const res = await fetch('/api/user')
-    const data = await res.json()
-    this.name = data.name
-    this.loading = false
-  },
-}
-type State = typeof initialState
-export type Store = EmpStore<State>
-
-function Child({ store }: { store: Store }) {
-  const snap = store.useSnapshot()
-  return (
-    <div>
-      <span>{snap.count}</span>
-      {snap.loading && <span>加载中…</span>}
-      <button onClick={() => store.set('count', snap.count + 1)}>+1</button>
-      <button onClick={() => store.fetchUser()}>请求用户</button>
-      <button onClick={() => store.reset({ count: 0, name: '', loading: false })}>Reset</button>
-    </div>
-  )
-}
-
-function Parent() {
-  const [snap, store] = useStore<State>(initialState)
-  return <Child store={store} />
-}
-```
-
-**要点：** 读只用 snap，写用 store 方法或 `store.key = value`。
-
-### 7. 常见错误与注意点
-
-- **"Please use proxy object"**：传给 `useSnapshot` / `subscribe` 的必须是 proxy（createStore/useStore 返回的 store 或 base），不要传普通对象。
-- **派生函数签名**：`derive: (get, proxy) => derivedObject`，`get(proxy)` 得当前快照，返回纯对象，不要写副作用。
-- **集合 key 名勿用 "set"**：会与 `store.set(key, value)` 方法冲突。
-
-```tsx
-// ✅ 正确：store 是 proxy
-const snap = store.useSnapshot()
-
-// ❌ 错误：plainObject 不是 proxy（useSnapshot/subscribe 同理，须传 store）
-const snapBad = snapshot(plainObject)  // 若从 valtio 引入 snapshot
-
-// derive：返回纯对象，无副作用
-const { base, derived } = createStore(
-  { a: 1, b: 2 },
-  { derive: (get, p) => ({ sum: get(p).a + get(p).b }) }
-)
-
-// 集合 key 勿用 "set"
+// ❌ 键名冲突示例
 const store = createStore({
-  map: createMap(),
-  // set: createSet(),  // BAD：与 store.set 冲突
+  set: createSet(),     // BAD：与 store.set() 方法同名
+})
+
+// ✅ 正确命名
+const store = createStore({
   tagSet: createSet(),  // OK
+})
+
+// ❌ derive 写副作用
+derive: (get, p) => {
+  console.log('side effect!')          // BAD
+  return { sum: get(p).a + get(p).b }
+}
+
+// ✅ derive 纯计算
+derive: (get, p) => ({
+  sum: get(p).a + get(p).b             // OK：仅返回纯对象
 })
 ```
 
-以上七条与官网「实战」页一致。**具体 API 与带注释代码**见 [valtio.empjs.dev/manual](https://valtio.empjs.dev/manual)。
+---
+
+## 7. 场景矩阵：快速选型
+
+| 场景 | 推荐方案 | 核心理由 |
+|------|----------|----------|
+| 全局配置（主题、语言、用户） | `createStore` | 单例共享，组件随时读取 |
+| 表单/编辑器（多实例） | `useStore` | 每实例独立，卸载自动释放 |
+| 需要撤销/重做 | `createStore` + `history` option | 历史栈内建，无需外接插件 |
+| 需要派生/计算属性 | `createStore` + `derive` option | 自动响应依赖变化 |
+| 需要本地持久化 | 任意 store + `.persist(key)` | 一行启用 |
+| 微前端：主机 → 子应用共享状态 | 主机 `useStore`，props 传入子组件 | 无耦合，类型安全 |
+| 微前端：子应用内部状态 | 子应用自行 `useStore` | 与主机完全隔离 |
+| 批量更新避免多次渲染 | `store.batch(() => { ... })` | 多次写入仅触发一次更新 |
 
 ---
 
-## 总结
-
-- **增强 Store 的能力**：原版 Valtio 仅提供 proxy + useSnapshot，写入口与历史/派生/持久化需自封装或拼多包；@empjs/valtio 单包内建 createStore/useStore、17 个 Store 方法及历史/派生/持久化/集合，典型场景减少约 40%～50% 样板，接入步骤从 4～5 步收敛为 1 步。
-- **调用闭环**：读只用 snap、写用 store 是硬约束，否则订阅不更新；类型用 `typeof initialState` + 导出 `Store`，子组件只依赖 Store，改形状只改 initialState 一处。
-- **全局与局部**：单例、跨组件共享用 createStore；组件内每实例一份（表单、编辑器、画板）用 useStore，生命周期与实例绑定，无需在模块层维护多实例。
-- **微前端与 props 传导**：子应用可独立 useStore 不碰主机单例；主机通过 props 把 store 传给远程组件，子组件只认 `EmpStore<State>` 类型，无全局单例、无事件总线，边界清晰，适合 Module Federation。
-- **后续**：最佳实战七条见官网「实战」页；具体使用方法（Store 方法说明与带注释代码）见 [valtio.empjs.dev/manual](https://valtio.empjs.dev/manual)。
+> **参考资料：** 官方文档 [valtio.empjs.dev](https://valtio.empjs.dev/) · API 详解 [valtio.empjs.dev/manual](https://valtio.empjs.dev/manual)
