@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import {Route, Switch} from 'wouter'
 import {Nav, ThemeContext} from './components/Nav'
 import {useT} from './i18n'
-import {BestPractices, Collections, Home, Performance, Subscribe, Use} from './routes/index'
+import {DynamicRouter} from './routes/DynamicRouter'
 
 const THEME_KEY = 'valtio-theme'
 
@@ -48,13 +48,7 @@ const App = () => {
         <Nav />
         <main id="main">
           <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/use" component={Use} />
-            <Route path="/collections" component={Collections} />
-            <Route path="/subscribe" component={Subscribe} />
-            <Route path="/subscribe" component={Subscribe} />
-            <Route path="/performance" component={Performance} />
-            <Route path="/best-practices" component={BestPractices} />
+            <Route path="*" component={DynamicRouter} />
           </Switch>
         </main>
         <footer className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">

@@ -1,4 +1,5 @@
 import {createStore, type EmpStore, useStore} from '@empjs/valtio'
+import {Link} from 'wouter'
 import {CodeBlock} from 'src/components/CodeBlock'
 import {PageWithDemo} from 'src/components/PageWithDemo'
 import {useT} from 'src/i18n'
@@ -95,8 +96,10 @@ function ChildController({store}: {store: EmpStore<DemoState>}) {
   )
 }
 
+const sectionClass =
+  'scroll-mt-24 rounded border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/50'
 const sectionNumClass =
-  'flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
 const btnClass =
   'cursor-pointer rounded border border-transparent bg-slate-200 px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600'
 
@@ -167,23 +170,30 @@ export function BestPracticesPage() {
       <h1 className="mb-3 text-2xl font-semibold tracking-tight text-slate-800 dark:text-slate-100">
         {t('bestPractices.title')}
       </h1>
-      <p className="mb-6 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
+      <p className="mb-2 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
         {t('bestPractices.intro')}
+      </p>
+      <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+        <Link href="/manual" className="underline hover:text-slate-700 dark:hover:text-slate-300">
+          {t('bestPractices.seeManual')}
+        </Link>
       </p>
 
       <div className="space-y-6">
         {([1, 2, 3, 4, 5, 6, 7] as const).map(n => (
-          <section key={n}>
-            <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+          <section key={n} id={`s${n}`} className={sectionClass}>
+            <h2 className="mb-2 flex items-center gap-2 font-mono text-base font-semibold text-slate-800 dark:text-slate-200">
               <span className={sectionNumClass}>{n}</span>
               {t(`bestPractices.s${n}Title`)}
             </h2>
-            <p className="leading-relaxed text-slate-600 dark:text-slate-400">{t(`bestPractices.s${n}Desc`)}</p>
+            <p className="mb-0 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+              {t(`bestPractices.s${n}Desc`)}
+            </p>
           </section>
         ))}
       </div>
 
-      <div className="mt-8 space-y-6">
+      <div className="mt-6 space-y-6">
         <CodeBlock
           code={getBestPracticesSnippet(localeSnap.locale, 'callFlowAndUsage')}
           title={t('bestPractices.codeTitle1')}

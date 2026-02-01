@@ -1,6 +1,7 @@
 export {BestPractices} from './BestPractices'
 export {Collections} from './Collections'
 export {Home} from './Home'
+export {Manual} from './Manual'
 export {Performance} from './Performance'
 export {Subscribe} from './Subscribe'
 export {Use} from './Use'

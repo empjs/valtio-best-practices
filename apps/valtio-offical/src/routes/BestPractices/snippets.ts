@@ -46,8 +46,9 @@ function LocalInstance({ initialLabel }: { initialLabel: string }) {
 const globalStore = createStore({ count: 0, name: 'global' })
 const [snap, localStore] = useStore(() => ({ count: 0 }))
 
-
-// 4. 常规 + 5. 全局 + 6. 组件通信（Parent → Child）
+// 4. 常规 Store：createStore 单例，useStore 每实例
+// 5. 全局 Store：createStore 跨组件共享，返回 EmpStore<T>
+// 6. 组件通信（Parent → Child）：父 useStore 得 [snap, store]，传 store 给子；子收 EmpStore<MyState>
 // ------------------------------------------------------------------
 function ChildComponent({ store }: { store: EmpStore<MyState> }) {
   const snap = store.useSnapshot()
@@ -109,8 +110,9 @@ function LocalInstance({ initialLabel }: { initialLabel: string }) {
 const globalStore = createStore({ count: 0, name: 'global' })
 const [snap, localStore] = useStore(() => ({ count: 0 }))
 
-
-// 4. Regular + 5. Global + 6. Component communication (Parent → Child)
+// 4. Regular store: createStore singleton, useStore per-instance
+// 5. Global store: createStore shared, returns EmpStore<T>
+// 6. Component communication (Parent → Child): parent useStore gets [snap, store], pass store to child; child receives EmpStore<MyState>
 // ------------------------------------------------------------------
 function ChildComponent({ store }: { store: EmpStore<MyState> }) {
   const snap = store.useSnapshot()
