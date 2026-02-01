@@ -10,10 +10,8 @@ import {getBestPracticesSnippet} from './snippets'
 const callFlowStore = createStore({count: 0, name: ''})
 
 // ----- Local Store (component isolation) demo: each instance has its own useStore -----
-type LocalState = {count: number; label: string}
-
 function LocalStoreInstance({initialLabel}: {initialLabel: string}) {
-  const [snap, store] = useStore<LocalState>({count: 0, label: initialLabel})
+  const [snap, store] = useStore({count: 0, label: initialLabel})
   return (
     <div className="rounded border border-emerald-200 bg-emerald-50/80 p-3 dark:border-emerald-800 dark:bg-emerald-900/20">
       <h4 className="mb-2 text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400">
@@ -45,10 +43,12 @@ function LocalStoreInstance({initialLabel}: {initialLabel: string}) {
   )
 }
 
-// ----- Component communication demo types -----
-type DemoState = {count: number; msg: string}
+// ----- Component communication demo: type from typeof initialState，改形状只改一处；Store 类型建议导出 -----
+const parentInitialState = {count: 100, msg: 'Parent Init'}
+type DemoState = typeof parentInitialState
+export type DemoStore = EmpStore<DemoState>
 
-function ChildViewer({store}: {store: EmpStore<DemoState>}) {
+function ChildViewer({store}: {store: DemoStore}) {
   const snap = store.useSnapshot()
   return (
     <div className="rounded border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-900/20">
@@ -65,7 +65,7 @@ function ChildViewer({store}: {store: EmpStore<DemoState>}) {
   )
 }
 
-function ChildController({store}: {store: EmpStore<DemoState>}) {
+function ChildController({store}: {store: DemoStore}) {
   return (
     <div className="rounded border border-orange-200 bg-orange-50 p-3 dark:border-orange-900 dark:bg-orange-900/20">
       <h4 className="mb-2 text-xs font-bold uppercase text-orange-500">Child (Controller)</h4>
@@ -106,7 +106,7 @@ const btnClass =
 export function BestPracticesPage() {
   const t = useT()
   const localeSnap = localeStore.useSnapshot()
-  const [snap, store] = useStore<DemoState>({count: 100, msg: 'Parent Init'})
+  const [snap, store] = useStore<DemoState>(parentInitialState)
   const callSnap = callFlowStore.useSnapshot()
 
   const demo = (

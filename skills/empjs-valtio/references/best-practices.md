@@ -41,13 +41,14 @@ interface MyStore {
 }
 ```
 
-**推荐**：用 `EmpStore<T>` 一步到位，包含 `useSnapshot`、`set`、`reset`、`batch`、`subscribe` 等全部增强方法。
+**推荐**：用 `EmpStore<T>` 一步到位，包含 `useSnapshot`、`set`、`reset`、`batch`、`subscribe` 等全部增强方法。类型用 `typeof` 从初始对象推导，改形状时只改 `initialState` 一处。建议导出 `export type Store = EmpStore<State>`，子组件或其它模块可直接用 `Store`。
 
 ```ts
 import { type EmpStore, createStore, useStore } from '@empjs/valtio'
 
-type MyState = { count: number; name: string }
-type MyStore = EmpStore<MyState>
+const initialState = { count: 0, name: '' }
+type State = typeof initialState
+export type Store = EmpStore<State>   // 建议导出，子组件 props 用 Store
 ```
 
 ---
@@ -93,14 +94,18 @@ const globalStore = createStore({ count: 0, name: 'global' })
 
 ## 6. 组件通信（Parent → Child）
 
-对应 SKILL「类型与组件通信」之父传子。子组件 props 收 `EmpStore<MyState>`，内部用 `store.useSnapshot()` 读、`store.set` / `store.reset` / 直接写 `store.key` 写；父组件 `useStore(...)` 得到 `[snap, store]`，把 `store` 传给子组件即可。
+对应 SKILL「类型与组件通信」之父传子。用 `const initialState` + `type State = typeof initialState`，改形状只改一处；建议 `export type Store = EmpStore<State>`，子组件收 `Store`，父组件 `useStore<State>(initialState)`。
 
-**子组件**：props 接收 `EmpStore<MyState>`，既能读（`store.useSnapshot()`）也能写（`store.set`、`store.reset`、`store.count++` 等）。
+**子组件**：props 接收 `Store`（即 `EmpStore<State>`），既能读（`store.useSnapshot()`）也能写（`store.set`、`store.reset`、`store.count++` 等）。
 
-**父组件**：用 `useStore` 创建局部 store，得到 `[snap, store]`，将 `store` 传给子组件。
+**父组件**：`useStore<State>(initialState)`，类型与初始状态同源。
 
 ```ts
-function ChildComponent({ store }: { store: EmpStore<MyState> }) {
+const initialState = { count: 10, name: 'parent' }
+type State = typeof initialState
+export type Store = EmpStore<State>
+
+function ChildComponent({ store }: { store: Store }) {
   const snap = store.useSnapshot()
   return (
     <div>
@@ -113,7 +118,7 @@ function ChildComponent({ store }: { store: EmpStore<MyState> }) {
 }
 
 function ParentComponent() {
-  const [snap, store] = useStore({ count: 10, name: 'parent' })
+  const [snap, store] = useStore<State>(initialState)
   return <ChildComponent store={store} />
 }
 ```

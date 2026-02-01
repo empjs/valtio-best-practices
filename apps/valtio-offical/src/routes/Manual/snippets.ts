@@ -129,44 +129,72 @@ store.set('count', 1)`,
 const useStoreConductionSnippet = {
   zh: `import { type EmpStore, useStore } from '@empjs/valtio'
 
-type State = { count: number; name: string }
+// 初始状态只写一处，类型由 typeof 推导；可含异步方法，this 指向 store
+const initialState = {
+  count: 10,
+  name: 'parent',
+  loading: false,
+  async fetchUser() {
+    this.loading = true
+    const res = await fetch('/api/user')
+    const data = await res.json()
+    this.name = data.name
+    this.loading = false
+  },
+}
+type State = typeof initialState
+export type Store = EmpStore<State>
 
-// 子组件：接收 EmpStore，读 snap、写 set/reset（传导）
-function Child({ store }: { store: EmpStore<State> }) {
+function Child({ store }: { store: Store }) {
   const snap = store.useSnapshot()
   return (
     <div>
       <span>{snap.count}</span>
+      {snap.loading && <span>加载中…</span>}
       <button onClick={() => store.set('count', snap.count + 1)}>+1</button>
-      <button onClick={() => store.reset({ count: 0, name: '' })}>Reset</button>
+      <button onClick={() => store.fetchUser()}>请求用户</button>
+      <button onClick={() => store.reset({ count: 0, name: '', loading: false })}>Reset</button>
     </div>
   )
 }
 
-// 父组件：useStore 得到 [snap, store]，将 store 传导给子组件
 function Parent() {
-  const [snap, store] = useStore<State>({ count: 10, name: 'parent' })
+  const [snap, store] = useStore<State>(initialState)
   return <Child store={store} />
 }`,
   en: `import { type EmpStore, useStore } from '@empjs/valtio'
 
-type State = { count: number; name: string }
+// Initial state defined once; type derived with typeof; may include async methods (this = store)
+const initialState = {
+  count: 10,
+  name: 'parent',
+  loading: false,
+  async fetchUser() {
+    this.loading = true
+    const res = await fetch('/api/user')
+    const data = await res.json()
+    this.name = data.name
+    this.loading = false
+  },
+}
+type State = typeof initialState
+export type Store = EmpStore<State>
 
-// Child: receives EmpStore, read snap, write set/reset (conduction)
-function Child({ store }: { store: EmpStore<State> }) {
+function Child({ store }: { store: Store }) {
   const snap = store.useSnapshot()
   return (
     <div>
       <span>{snap.count}</span>
+      {snap.loading && <span>Loading…</span>}
       <button onClick={() => store.set('count', snap.count + 1)}>+1</button>
-      <button onClick={() => store.reset({ count: 0, name: '' })}>Reset</button>
+      <button onClick={() => store.fetchUser()}>Fetch User</button>
+      <button onClick={() => store.reset({ count: 0, name: '', loading: false })}>Reset</button>
     </div>
   )
 }
 
-// Parent: useStore returns [snap, store], pass store to child (conduction)
 function Parent() {
-  const [snap, store] = useStore<State>({ count: 10, name: 'parent' })
+  const [snap, store] = useStore<State>(initialState)
   return <Child store={store} />
 }`,
 }

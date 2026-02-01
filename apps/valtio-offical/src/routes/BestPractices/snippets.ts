@@ -18,17 +18,17 @@ store.update({ name: 'Alice' })
 // 历史 store：读 snap.value，写 store.value；撤销/重做 snap.undo() / snap.redo()
 
 
-// 2. 类型：EmpStore<T>，不手写接口
+// 2. 类型：用 typeof 从初始对象推导，改形状只改 initialState 一处
 // ------------------------------------------------------------------
-type MyState = { count: number; name: string }
-type MyStore = EmpStore<MyState>
+// const initialState = { count: 10, name: 'parent' }
+// type State = typeof initialState   → useStore<State>(initialState)、EmpStore<State>
 
 
 // 1.2 局部 Store：组件隔离 + 传导方法
 // ------------------------------------------------------------------
-// 每实例独立 useStore，状态互不干扰；store 为 EmpStore，传导方法：useSnapshot / set / update / reset
+// 每实例独立 useStore，状态互不干扰；初始状态只写一次，类型推断
 function LocalInstance({ initialLabel }: { initialLabel: string }) {
-  const [snap, store] = useStore<{ count: number; label: string }>({ count: 0, label: initialLabel })
+  const [snap, store] = useStore({ count: 0, label: initialLabel })
   return (
     <div>
       <p>{snap.label}: count={snap.count}</p>
@@ -48,22 +48,38 @@ const [snap, localStore] = useStore(() => ({ count: 0 }))
 
 // 4. 常规 Store：createStore 单例，useStore 每实例
 // 5. 全局 Store：createStore 跨组件共享，返回 EmpStore<T>
-// 6. 组件通信（Parent → Child）：父 useStore 得 [snap, store]，传 store 给子；子收 EmpStore<MyState>
+// 6. 组件通信：const initialState + type State = typeof initialState；可含异步方法并调用
 // ------------------------------------------------------------------
-function ChildComponent({ store }: { store: EmpStore<MyState> }) {
+const initialState = {
+  count: 10,
+  name: 'parent',
+  loading: false,
+  async fetchUser() {
+    this.loading = true
+    const res = await fetch('/api/user')
+    const data = await res.json()
+    this.name = data.name
+    this.loading = false
+  },
+}
+type State = typeof initialState
+export type Store = EmpStore<State>
+
+function ChildComponent({ store }: { store: Store }) {
   const snap = store.useSnapshot()
   return (
     <div>
       <p>Count: {snap.count}</p>
+      {snap.loading && <p>Loading…</p>}
       <button onClick={() => store.count++}>+1</button>
-      <button onClick={() => store.set('name', 'child')}>Change Name</button>
-      <button onClick={() => store.reset({ count: 0, name: 'reset' })}>Reset</button>
+      <button onClick={() => store.fetchUser()}>Fetch User</button>
+      <button onClick={() => store.reset({ count: 0, name: 'reset', loading: false })}>Reset</button>
     </div>
   )
 }
 
 function ParentComponent() {
-  const [snap, store] = useStore({ count: 10, name: 'parent' })
+  const [snap, store] = useStore<State>(initialState)
   return <ChildComponent store={store} />
 }
 `,
@@ -82,17 +98,17 @@ store.update({ name: 'Alice' })
 // History store: read snap.value, write store.value; undo/redo snap.undo() / snap.redo()
 
 
-// 2. Types: EmpStore<T>, do not hand-write interfaces
+// 2. Types: derive from initial object with typeof; change shape in one place only
 // ------------------------------------------------------------------
-type MyState = { count: number; name: string }
-type MyStore = EmpStore<MyState>
+// const initialState = { count: 10, name: 'parent' }
+// type State = typeof initialState   → useStore<State>(initialState), EmpStore<State>
 
 
 // 1.2 Local Store: component isolation + conduction methods
 // ------------------------------------------------------------------
-// Each instance uses useStore independently; store is EmpStore: useSnapshot / set / update / reset
+// Each instance uses useStore; initial state defined once, type inferred
 function LocalInstance({ initialLabel }: { initialLabel: string }) {
-  const [snap, store] = useStore<{ count: number; label: string }>({ count: 0, label: initialLabel })
+  const [snap, store] = useStore({ count: 0, label: initialLabel })
   return (
     <div>
       <p>{snap.label}: count={snap.count}</p>
@@ -112,22 +128,38 @@ const [snap, localStore] = useStore(() => ({ count: 0 }))
 
 // 4. Regular store: createStore singleton, useStore per-instance
 // 5. Global store: createStore shared, returns EmpStore<T>
-// 6. Component communication (Parent → Child): parent useStore gets [snap, store], pass store to child; child receives EmpStore<MyState>
+// 6. Component communication: const initialState + type State = typeof initialState; may include async method and call it
 // ------------------------------------------------------------------
-function ChildComponent({ store }: { store: EmpStore<MyState> }) {
+const initialState = {
+  count: 10,
+  name: 'parent',
+  loading: false,
+  async fetchUser() {
+    this.loading = true
+    const res = await fetch('/api/user')
+    const data = await res.json()
+    this.name = data.name
+    this.loading = false
+  },
+}
+type State = typeof initialState
+export type Store = EmpStore<State>
+
+function ChildComponent({ store }: { store: Store }) {
   const snap = store.useSnapshot()
   return (
     <div>
       <p>Count: {snap.count}</p>
+      {snap.loading && <p>Loading…</p>}
       <button onClick={() => store.count++}>+1</button>
-      <button onClick={() => store.set('name', 'child')}>Change Name</button>
-      <button onClick={() => store.reset({ count: 0, name: 'reset' })}>Reset</button>
+      <button onClick={() => store.fetchUser()}>Fetch User</button>
+      <button onClick={() => store.reset({ count: 0, name: 'reset', loading: false })}>Reset</button>
     </div>
   )
 }
 
 function ParentComponent() {
-  const [snap, store] = useStore({ count: 10, name: 'parent' })
+  const [snap, store] = useStore<State>(initialState)
   return <ChildComponent store={store} />
 }
 `,

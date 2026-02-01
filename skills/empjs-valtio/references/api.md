@@ -85,7 +85,7 @@ function useStore<T, D>(initialState: InitialStateOrFn<T>, options: { derive: De
 
 ## 增强 Store / History / Derive
 
-- **EmpStore**：类型 `T & StoreBaseMethods<T>`，用于标注「可读可写 store」；子组件接收 `EmpStore<MyState>` 即可读（useSnapshot）也可写（set/reset/直接赋值）。最佳实践见 [best-practices.md](best-practices.md)。
+- **EmpStore**：类型 `T & StoreBaseMethods<T>`，用于标注「可读可写 store」；推荐用 `const initialState` + `type State = typeof initialState`，子组件收 `EmpStore<State>`，即可读（useSnapshot）也可写（set/reset/直接赋值）。最佳实践见 [best-practices.md](best-practices.md)。
 - **enhanceStore**：内部使用，为 `proxy` 挂载上述 `StoreBaseMethods`，对外通过 `createStore`/`useStore` 暴露。
 - **History**：`createStore(..., { history: {} })` 或 `useStore(..., { history: {} })`；读用 `snap.value`，写用 `store.value.xxx`；撤销/重做见 `WithHistorySnapshot`；当前步数 `snap.history?.nodes?.length`。
 - **Derive**：`derive(get, proxy)` 中 `get(proxy)` 取当前快照；返回对象会变为派生 proxy，仅读、自动随 base 更新。
