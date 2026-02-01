@@ -20,6 +20,7 @@ const links: Array<{href: string; labelKey: string}> = [
   {href: '/collections', labelKey: 'nav.collections'},
   {href: '/subscribe', labelKey: 'nav.subscribe'},
   {href: '/performance', labelKey: 'nav.performance'},
+  {href: '/best-practices', labelKey: 'nav.bestPractices'},
 ]
 
 function SunIcon() {

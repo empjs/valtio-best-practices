@@ -1,3 +1,4 @@
+export {BestPractices} from './BestPractices'
 export {Collections} from './Collections'
 export {Home} from './Home'
 export {Performance} from './Performance'
