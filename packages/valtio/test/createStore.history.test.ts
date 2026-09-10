@@ -26,20 +26,22 @@ describe('createStore history', () => {
     expect(() => store.undo()).not.toThrow()
   })
 
-  test('redo 前进', () => {
+  test('undo 后启用 redo 并恢复值', async () => {
     const store = createStore({count: 0}, {history: {}})
-    store.value.count = 1
+    store.value.count = 2
+    await new Promise(resolve => setTimeout(resolve, 0))
     store.undo()
+    await new Promise(resolve => setTimeout(resolve, 0))
+
+    const undoSnap = snapshot(store) as {value: {count: number}; isRedoEnabled: boolean}
+    expect(undoSnap.value.count).toBe(0)
+    expect(undoSnap.isRedoEnabled).toBe(true)
+
     store.redo()
-    const snap = snapshot(store) as {value: {count: number}}
-    expect(snap.value.count).toBe(1)
-  })
+    await new Promise(resolve => setTimeout(resolve, 0))
 
-  test('redo 可调用且不抛错', () => {
-    const store = createStore({count: 0}, {history: {}})
-    store.value.count = 1
-    store.undo()
-    expect(() => store.redo()).not.toThrow()
+    const redoSnap = snapshot(store) as {value: {count: number}; isRedoEnabled: boolean}
+    expect(redoSnap.value.count).toBe(2)
+    expect(redoSnap.isRedoEnabled).toBe(false)
   })
-
 })

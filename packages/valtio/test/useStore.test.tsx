@@ -47,6 +47,47 @@ describe('useStore history', () => {
     })
     expect(result.current[1].value.count).toBe(2)
   })
+
+  test('history snapshot 在撤销后启用重做，并在重做后关闭', async () => {
+    const nextTick = () => new Promise<void>(resolve => setTimeout(resolve, 0))
+    const {result} = renderHook(() => {
+      const [snap, store] = useStore({count: 0}, {history: {}})
+      return {
+        count: snap.value.count,
+        isUndoEnabled: snap.isUndoEnabled,
+        isRedoEnabled: snap.isRedoEnabled,
+        store,
+      }
+    })
+
+    await act(async () => {
+      result.current.store.value.count = 1
+      await nextTick()
+    })
+    await act(async () => {
+      result.current.store.value.count = 2
+      await nextTick()
+    })
+    expect(result.current.count).toBe(2)
+    expect(result.current.isUndoEnabled).toBe(true)
+    expect(result.current.isRedoEnabled).toBe(false)
+
+    await act(async () => {
+      result.current.store.undo()
+      await nextTick()
+    })
+    expect(result.current.count).toBe(1)
+    expect(result.current.isUndoEnabled).toBe(true)
+    expect(result.current.isRedoEnabled).toBe(true)
+
+    await act(async () => {
+      result.current.store.redo()
+      await nextTick()
+    })
+    expect(result.current.count).toBe(2)
+    expect(result.current.isUndoEnabled).toBe(true)
+    expect(result.current.isRedoEnabled).toBe(false)
+  })
 })
 
 describe('useStore derive', () => {
