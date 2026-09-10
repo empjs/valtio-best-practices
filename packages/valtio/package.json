@@ -47,6 +47,6 @@
   "dependencies": {
     "derive-valtio": "^0.2.0",
     "valtio": "^2.3.0",
-    "valtio-history": "^1.0.1"
+    "valtio-history": "^1.1.2"
   }
 }
