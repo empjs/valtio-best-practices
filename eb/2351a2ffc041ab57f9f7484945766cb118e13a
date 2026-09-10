@@ -1,0 +1,32 @@
+packages/valtio/test/createStore.history.test.ts
+  s_d171756b90b930::t_a3b840b98aa96b 29,31-32,34-39,41,43-45
+packages/valtio/test/useStore.test.tsx
+  s_d171756b90b930::t_54aaa9e77575ea 50-90
+packages/valtio/src/index.ts
+  s_d171756b90b930::t_b4656d8201ce4f 90
+  s_d171756b90b930::t_a11f510bdc0711 82-89,249-256,325
+  s_d171756b90b930::t_54aaa9e77575ea 91-92
+packages/valtio/package.json
+  s_d171756b90b930::t_d4d4730392940c 50
+pnpm-lock.yaml
+  s_d171756b90b930::t_7e36bb5dce0b7e 89-90,5325-5326,11062
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "eb2351a2ffc041ab57f9f7484945766cb118e13a",
+  "prompts": {},
+  "logical_commit_id": "eb2351a2ffc041ab57f9f7484945766cb118e13a",
+  "sessions": {
+    "s_d171756b90b930": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0894a-906c-7ce3-8562-78dc2f19ac8b",
+        "model": "gpt-5.6-terra"
+      },
+      "human_author": "luoyongjie <luoyongjie@bigo.sg>",
+      "total_additions": 150,
+      "total_deletions": 91
+    }
+  }
+}
