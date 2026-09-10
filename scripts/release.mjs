@@ -67,7 +67,13 @@ async function main() {
       stdio: ['ignore', 'pipe', 'inherit'],
     }),
   )
-  for (const path of ['dist/index.js', 'dist/index.cjs', 'dist/index.d.ts', 'dist/index.d.cts']) {
+  const exports = manifest.exports['.']
+  for (const path of [
+    manifest.main,
+    manifest.types,
+    ...Object.values(exports.import),
+    ...Object.values(exports.require),
+  ].map(path => path.replace(/^\.\//, ''))) {
     if (!pack.files.some(file => file.path === path)) throw new Error(`Missing package output: ${path}`)
   }
   const digest = fingerprint(

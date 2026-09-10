@@ -1,4 +1,4 @@
-import {describe, expect, test} from 'bun:test'
+import {describe, expect, test} from '@rstest/core'
 import {createStore} from '../src/index'
 
 describe('enhanceStore / createStore 基础方法', () => {

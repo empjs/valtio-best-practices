@@ -1,3 +1,8 @@
-import {GlobalRegistrator} from '@happy-dom/global-registrator'
+import {afterEach} from '@rstest/core'
+import {cleanup} from '@testing-library/react'
 
-GlobalRegistrator.register()
+Object.assign(globalThis, {IS_REACT_ACT_ENVIRONMENT: true})
+afterEach(() => {
+  cleanup()
+  localStorage.clear()
+})

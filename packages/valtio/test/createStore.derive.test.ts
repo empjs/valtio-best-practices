@@ -1,4 +1,4 @@
-import {describe, expect, test} from 'bun:test'
+import {describe, expect, test} from '@rstest/core'
 import {createStore} from '../src/index'
 
 describe('createStore derive', () => {
@@ -16,10 +16,11 @@ describe('createStore derive', () => {
     const {base, derived} = result
     expect(base.toJSON()).toEqual({a: 1, b: 2})
     expect(typeof derived.useSnapshot).toBe('function')
+    expect(derived.sum).toBe(3)
   })
 
-  test('base 更新后 derived 快照变化（通过 toJSON 仅测 base）', () => {
-    const {base} = createStore(
+  test('base 更新后派生值重新计算', async () => {
+    const {base, derived} = createStore(
       {a: 1, b: 2},
       {
         derive: (get, p) => ({sum: get(p).a + get(p).b}),
@@ -27,5 +28,8 @@ describe('createStore derive', () => {
     )
     base.update({a: 10})
     expect(base.toJSON()).toEqual({a: 10, b: 2})
+    await expect.poll(() => derived.sum).toBe(12)
+    base.set('b', 5)
+    await expect.poll(() => derived.sum).toBe(15)
   })
 })

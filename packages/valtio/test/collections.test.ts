@@ -1,4 +1,4 @@
-import {describe, expect, test} from 'bun:test'
+import {describe, expect, test} from '@rstest/core'
 import {createMap, createSet, createStore} from '../src/index'
 
 describe('createMap', () => {

@@ -1,4 +1,4 @@
-import {describe, expect, test} from 'bun:test'
+import {describe, expect, test} from '@rstest/core'
 import {act, renderHook} from '@testing-library/react'
 import {useStore} from '../src/index'
 
@@ -91,15 +91,17 @@ describe('useStore history', () => {
 })
 
 describe('useStore derive', () => {
-  test('options.derive 返回 [baseSnap, baseStore, derivedSnap]', () => {
+  test('options.derive 返回响应式的 [baseSnap, baseStore, derivedSnap]', async () => {
     const {result} = renderHook(() => useStore({a: 1, b: 2}, {derive: (get, p) => ({sum: get(p).a + get(p).b})}))
     const [baseSnap, baseStore] = result.current
     expect(baseSnap.a).toBe(1)
     expect(baseSnap.b).toBe(2)
     expect(result.current.length).toBe(3)
-    act(() => {
+    expect(result.current[2].sum).toBe(3)
+    await act(async () => {
       baseStore.update({a: 10})
     })
     expect(baseStore.toJSON().a).toBe(10)
+    expect(result.current[2].sum).toBe(12)
   })
 })

@@ -51,10 +51,13 @@ pnpm add @empjs/valtio
 | `pnpm lint` | 运行 Biome 检查并自动修复 |
 | `pnpm --filter @empjs/valtio build` | 构建 `@empjs/valtio` |
 | `pnpm --filter @empjs/valtio test` | 运行 valtio 包测试 |
+| `pnpm typecheck` | 使用 TypeScript 7 检查包和页面类型（需先构建核心包） |
+| `pnpm test:e2e` | 构建后用 Rstest + Playwright 验收 EMP 生产预览页面 |
+| `pnpm verify` | 单元测试、构建、类型检查、E2E 和打包检查 |
 
 ## main 自动部署与发版
 
-工作流：`.github/workflows/release.yml`。PR 执行测试与构建；提交到 `main` 后，检查通过才会部署 Cloudflare Pages 并按需发布 npm 包。也可在 Actions 手动重跑（仅 main 可以部署或发布）。
+工作流：`.github/workflows/release.yml`。PR 执行测试、构建、TS 7 类型检查和 Rstest E2E；提交到 `main` 后，全部检查通过才会部署 Cloudflare Pages 并按需发布 npm 包。也可在 Actions 手动重跑（仅 main 可以部署或发布）。
 
 - 页面：先构建工作区核心包，再构建文档站，上传至 Cloudflare Pages 项目 `valtio-best-practices` 的 `main` 生产分支。
 - npm：对实际打包文件计算指纹。内容与 npm 最新版一致时跳过；变化时从 npm 最新版自动递增 patch。首次启用会发布一个包含指纹的新版本。仅修改页面或测试不会触发新包，除非同时改变了包产物。
@@ -71,20 +74,22 @@ pnpm add @empjs/valtio
 
 ```bash
 pnpm install --frozen-lockfile
-node --test scripts/release.test.mjs
-pnpm --filter @empjs/valtio test
-NODE_ENV=production pnpm --filter @empjs/valtio build
-pnpm --filter valtio-offical build
-node scripts/release.mjs
+pnpm exec playwright install chromium # Linux CI 使用 install --with-deps chromium
+pnpm verify
 ```
+
+E2E 在随机端口启动 EMP 4 `serve`，完成后自动关闭。24 项真实 Chromium 检查覆盖 1440px 桌面、390px 移动端下的全部 7 个路由直达与刷新、全局与局部状态、撤销/重做、派生值、Map/Set、导航、语言和主题持久化；同时检查浏览器错误及页面横向溢出。测试使用隔离的浏览器上下文，不依赖外部网站。
+
+本次运行的 JSON 报告、验收截图与失败 trace 位于 `artifacts/e2e/`，每次运行会清理该目录。CI 上传为 `e2e-evidence`。已有构建产物时可运行 `pnpm test:e2e:run`。该验收针对本地生产构建，不能替代 Cloudflare 上线后的检查。
 
 参考：[Cloudflare CI 部署](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/)、[npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)。
 
 ## 技术栈
 
 - **状态**：Valtio + derive-valtio + valtio-history，封装为 `@empjs/valtio`
-- **文档站**：React + Wouter + Tailwind CSS，Emp 构建
-- **代码质量**：TypeScript、Biome
+- **文档站**：React / React DOM 19.3，Wouter、Tailwind CSS 4，EMP CLI 与插件 4.0.1
+- **库构建**：Rslib 1.0，输出 ESM / CommonJS；TS 7 原生编译器生成类型，两个格式使用独立声明目录，避免并行生成覆盖
+- **代码质量**：TypeScript 7.0.2、Biome、Rstest 0.11.12；E2E 使用官方 `@rstest/playwright` 集成
 
 ## 相关链接
 

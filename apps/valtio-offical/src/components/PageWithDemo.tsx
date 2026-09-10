@@ -15,7 +15,7 @@ export function PageWithDemo({children, demo}: PageWithDemoProps) {
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-10 sm:pt-10 sm:pb-12">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10 lg:items-start">
         <div className="min-w-0">{children}</div>
-        <aside className="shrink-0 lg:sticky lg:top-4" aria-label="运行效果">
+        <aside className="min-w-0 shrink-0 lg:sticky lg:top-4" aria-label="运行效果">
           {demo}
         </aside>
       </div>

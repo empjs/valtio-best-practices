@@ -16,15 +16,15 @@
   },
   "keywords": ["valtio", "store"],
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/types/esm/index.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/index.d.ts",
+        "types": "./dist/types/esm/index.d.ts",
         "default": "./dist/index.js"
       },
       "require": {
-        "types": "./dist/index.d.cts",
+        "types": "./dist/types/cjs/index.d.cts",
         "default": "./dist/index.cjs"
       }
     }
@@ -36,14 +36,13 @@
   "scripts": {
     "build": "rslib build",
     "dev": "rslib build --watch",
-    "build:tsup": "tsup --config tsup.config.ts",
-    "dev:tsup": "tsup --watch --config tsup.config.ts",
-    "test": "bun test",
-    "tc": "bun test --coverage"
+    "test": "rstest run",
+    "tc": "rstest run --coverage"
   },
   "devDependencies": {
-    "@happy-dom/global-registrator": "^14.0.0",
-    "@testing-library/react": "^14.2.0"
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.3",
+    "happy-dom": "^20.14.3"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

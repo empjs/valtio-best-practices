@@ -5,3 +5,5 @@ coverage
 ui-ux-pro-max
 
 .wrangler
+artifacts
+.rstest

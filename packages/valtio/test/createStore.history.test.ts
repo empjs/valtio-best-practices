@@ -1,4 +1,4 @@
-import {describe, expect, test} from 'bun:test'
+import {describe, expect, test} from '@rstest/core'
 import {createStore, snapshot} from '../src/index'
 
 describe('createStore history', () => {

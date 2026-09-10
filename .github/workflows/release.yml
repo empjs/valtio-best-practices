@@ -25,9 +25,6 @@ jobs:
         with:
           node-version: '24'
           cache: pnpm
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.4.2'
       - run: pnpm install --frozen-lockfile
       - run: node --test scripts/release.test.mjs
       - run: pnpm --filter @empjs/valtio test
@@ -35,6 +32,17 @@ jobs:
         env:
           NODE_ENV: production
       - run: pnpm --filter valtio-offical build
+      - run: pnpm typecheck
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Rstest production E2E acceptance
+        run: pnpm test:e2e:run
+      - name: Upload E2E evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-evidence
+          path: artifacts/e2e
+          if-no-files-found: ignore
       - name: Validate npm package
         run: node scripts/release.mjs
       - uses: actions/upload-artifact@v4

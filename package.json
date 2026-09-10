@@ -10,26 +10,33 @@
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "lint": "biome check --write"
+    "lint": "biome check --write",
+    "dev": "pnpm --filter valtio-offical dev",
+    "build": "NODE_ENV=production pnpm --filter @empjs/valtio build && pnpm --filter valtio-offical build",
+    "typecheck": "tsc --noEmit -p packages/valtio/tsconfig.json && tsc --noEmit -p apps/valtio-offical/tsconfig.json",
+    "test": "node --test scripts/release.test.mjs && pnpm --filter @empjs/valtio test",
+    "test:e2e": "pnpm build && pnpm test:e2e:run",
+    "test:e2e:run": "node scripts/run-e2e.mjs",
+    "verify": "pnpm test && pnpm build && pnpm typecheck && pnpm test:e2e:run && node scripts/release.mjs"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8"
+    "node": ">=22.18.0",
+    "pnpm": ">=10"
   },
   "devDependencies": {
     "@empjs/biome-config": "2.3.11",
-    "@empjs/cli": "3.12.2",
-    "@empjs/plugin-react": "3.12.1",
-    "@types/react": "^19.2.10",
-    "@types/react-dom": "^19.2.3",
-    "tsup": "8.5.1",
-    "@rslib/core": "^0.19.3",
-    "@types/bun": "latest",
-    "typescript": "^5.9.3"
+    "@empjs/cli": "4.0.1",
+    "@empjs/plugin-react": "4.0.1",
+    "@rslib/core": "^1.0.0",
+    "@rstest/core": "0.11.12",
+    "@rstest/playwright": "0.11.12",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "playwright": "1.63.0",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@empjs/share": "3.13.7",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   }
 }

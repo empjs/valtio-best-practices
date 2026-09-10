@@ -1,4 +1,4 @@
-import {afterEach, describe, expect, test} from 'bun:test'
+import {afterEach, describe, expect, test} from '@rstest/core'
 import {createStore} from '../src/index'
 
 const storageKey = 'valtio-test-persist'

@@ -67,6 +67,19 @@ function resolveInitialState<T>(initialStateOrFn: InitialStateOrFn<T>): T {
   return typeof initialStateOrFn === 'function' ? (initialStateOrFn as () => T)() : initialStateOrFn
 }
 
+/** 将返回派生对象的公共 API 转为 derive-valtio 的逐字段计算器。 */
+function createDerivedProxy<T extends object>(source: T, compute: DeriveFn<T, unknown>) {
+  const evaluate = (get: (value: T) => T) => {
+    const result = compute(value => snapshot(get(value)), source)
+    if (result === null || typeof result !== 'object' || Array.isArray(result)) {
+      throw new TypeError('derive must return an object of computed fields')
+    }
+    return result as Record<string, unknown>
+  }
+  const keys = Object.keys(evaluate(value => value))
+  return derive(Object.fromEntries(keys.map(key => [key, (get: (value: T) => T) => evaluate(get)[key]])))
+}
+
 /** 从快照中筛出可序列化字段（去掉 function/symbol） */
 function toJSONFromSnapshot(snap: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {}
@@ -235,7 +248,7 @@ export function enhanceStore<T extends object>(store: T, initialState?: T): EmpS
 /** 带 derive 时的返回：base + derived（均含 useSnapshot，与普通 store 用法一致） */
 export interface StoreWithDerived<T extends object, D> {
   base: T & StoreBaseMethods<T>
-  derived: object & {useSnapshot(): D}
+  derived: D & {useSnapshot(): D}
 }
 
 function createStoreImpl<T extends object>(
@@ -259,7 +272,7 @@ function createStoreImpl<T extends object>(
   if (opts.derive != null) {
     const proxied = proxy(initialState) as T
     const baseStore = enhanceStore(proxied, initialState)
-    const derivedState = derive(opts.derive, {proxy: proxied}) as object & {useSnapshot?: () => unknown}
+    const derivedState = createDerivedProxy(proxied, opts.derive) as object & {useSnapshot?: () => unknown}
     derivedState.useSnapshot = function useSnapshotFromDerived() {
       return useSnapshot(derivedState)
     }
@@ -330,7 +343,7 @@ function useStoreImpl<T extends object>(
       const state = resolveInitialState(initialState)
       const proxied = proxy(state) as T
       const baseStore = enhanceStore(proxied, state)
-      const derivedState = derive(opts.derive!, {proxy: proxied})
+      const derivedState = createDerivedProxy(proxied, opts.derive!)
       return {base: baseStore, derived: derivedState}
     }, [])
     const baseSnap = useSnapshot(config.base) as Snapshot<T>
