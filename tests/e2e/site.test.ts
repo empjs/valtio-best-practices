@@ -1,8 +1,10 @@
-import {mkdirSync} from 'node:fs'
+import {mkdirSync, readFileSync} from 'node:fs'
 import {afterEach, test as base, beforeEach, expect, type PlaywrightFixture} from '@rstest/playwright'
 import type {Page} from 'playwright'
 
 const baseURL = process.env.E2E_BASE_URL
+const expectedVersion =
+  process.env.E2E_EXPECTED_VERSION ?? JSON.parse(readFileSync('packages/valtio/package.json', 'utf8')).version
 if (!baseURL) throw new Error('Run E2E with pnpm test:e2e or pnpm test:e2e:run')
 const errors = new WeakMap<Page, string[]>()
 
@@ -50,6 +52,9 @@ for (const viewport of [
       expect(response?.status()).toBe(200)
       await expect(page.locator('h1')).toContainText(heading)
       await expect(page.getByRole('navigation', {name: '主导航'})).toBeVisible()
+      const versionBadge = page.getByRole('navigation', {name: '主导航'}).locator('a[href="/"]').first().locator('span')
+      await expect(versionBadge).toHaveText(`v${expectedVersion}`)
+      if (viewport.width >= 640) await expect(versionBadge).toBeVisible()
       await page.reload()
       await expect(page.locator('h1')).toContainText(heading)
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)

@@ -31,6 +31,14 @@ jobs:
       - run: pnpm --filter @empjs/valtio build
         env:
           NODE_ENV: production
+      - name: Select release version from canonical package build
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: node scripts/release.mjs --write
+      - name: Rebuild package with selected release version
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: pnpm --filter @empjs/valtio build
+        env:
+          NODE_ENV: production
       - run: pnpm --filter valtio-offical build
       - run: pnpm typecheck
       - run: pnpm exec playwright install --with-deps chromium
@@ -49,12 +57,13 @@ jobs:
         with:
           name: production-builds
           path: |
+            packages/valtio/package.json
             packages/valtio/dist
             apps/valtio-offical/dist
           if-no-files-found: error
 
   deploy:
-    needs: verify
+    needs: [verify, publish]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -93,13 +102,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: production-builds
-      - name: Select version and skip unchanged package
+      - name: Check prepared version and skip already published package
         id: release
-        run: node scripts/release.mjs --write
+        run: node scripts/release.mjs --check
       - name: Publish using npm trusted publishing
         if: steps.release.outputs.publish == 'true'
         working-directory: packages/valtio
         run: npm publish --access public --provenance --registry=https://registry.npmjs.org/
       - name: Verify published version
-        if: steps.release.outputs.publish == 'true'
         run: node scripts/release.mjs --verify

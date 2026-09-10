@@ -59,10 +59,10 @@ pnpm add @empjs/valtio
 
 工作流：`.github/workflows/release.yml`。PR 执行测试、构建、TS 7 类型检查和 Rstest E2E；提交到 `main` 后，全部检查通过才会部署 Cloudflare Pages 并按需发布 npm 包。也可在 Actions 手动重跑（仅 main 可以部署或发布）。
 
-- 页面：先构建工作区核心包，再构建文档站，上传至 Cloudflare Pages 项目 `valtio-best-practices` 的 `main` 生产分支。
+- 页面：先按源码基线构建核心包用于内容比较，再确定版本并重新构建包和文档站；npm 版本回读通过后，上传同一批验收产物至 Cloudflare Pages 项目 `valtio-best-practices` 的 `main` 生产分支。
 - npm：对实际打包文件计算指纹。内容与 npm 最新版一致时跳过；变化时从 npm 最新版自动递增 patch。首次启用会发布一个包含指纹的新版本。仅修改页面或测试不会触发新包，除非同时改变了包产物。
-- 主动升级 minor/major：把 `packages/valtio/package.json` 的版本设为高于 npm 最新版的稳定版本。自动版本只写入 CI 发布产物，不回写 main；实际版本以 npm 和 Actions 发布摘要为准。
-- 测试失败不会发布。部署与 npm 发布独立执行，其中一项失败可重跑失败任务；已发布且内容相同的包会跳过。npm 请求异常会终止，避免错误选版。工作流串行发布，不中途取消。
+- 主动升级 minor/major：把 `packages/valtio/package.json` 的版本设为高于 npm 最新版的稳定版本。自动版本写入 CI 的 manifest 后再构建，不回写 main；页面和包的 `version` 导出与实际 npm 版本一致。仅更新页面时也使用 npm 已发布版本构建。
+- 测试失败不会发布。页面部署依赖 npm 版本回读成功；失败后可重跑失败任务，已存在且指纹相同的版本会跳过发布，指纹不同则阻止发布。npm 请求异常会终止，避免错误选版。工作流串行发布，不中途取消。
 
 首次启用需要完成以下外部配置：
 
@@ -79,6 +79,8 @@ pnpm verify
 ```
 
 E2E 在随机端口启动 EMP 4 `serve`，完成后自动关闭。24 项真实 Chromium 检查覆盖 1440px 桌面、390px 移动端下的全部 7 个路由直达与刷新、全局与局部状态、撤销/重做、派生值、Map/Set、导航、语言和主题持久化；同时检查浏览器错误及页面横向溢出。测试使用隔离的浏览器上下文，不依赖外部网站。
+
+版本门禁检查 ESM/CJS 导出值与待发布 manifest 一致，E2E 同时检查导航版本号。验收线上页面时设置 `E2E_BASE_URL` 和从 npm 回读的 `E2E_EXPECTED_VERSION`，然后执行 `pnpm exec rstest run --config rstest.e2e.config.ts`。
 
 本次运行的 JSON 报告、验收截图与失败 trace 位于 `artifacts/e2e/`，每次运行会清理该目录。CI 上传为 `e2e-evidence`。已有构建产物时可运行 `pnpm test:e2e:run`。该验收针对本地生产构建，不能替代 Cloudflare 上线后的检查。
 
