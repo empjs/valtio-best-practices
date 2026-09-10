@@ -52,6 +52,34 @@ pnpm add @empjs/valtio
 | `pnpm --filter @empjs/valtio build` | 构建 `@empjs/valtio` |
 | `pnpm --filter @empjs/valtio test` | 运行 valtio 包测试 |
 
+## main 自动部署与发版
+
+工作流：`.github/workflows/release.yml`。PR 执行测试与构建；提交到 `main` 后，检查通过才会部署 Cloudflare Pages 并按需发布 npm 包。也可在 Actions 手动重跑（仅 main 可以部署或发布）。
+
+- 页面：先构建工作区核心包，再构建文档站，上传至 Cloudflare Pages 项目 `valtio-best-practices` 的 `main` 生产分支。
+- npm：对实际打包文件计算指纹。内容与 npm 最新版一致时跳过；变化时从 npm 最新版自动递增 patch。首次启用会发布一个包含指纹的新版本。仅修改页面或测试不会触发新包，除非同时改变了包产物。
+- 主动升级 minor/major：把 `packages/valtio/package.json` 的版本设为高于 npm 最新版的稳定版本。自动版本只写入 CI 发布产物，不回写 main；实际版本以 npm 和 Actions 发布摘要为准。
+- 测试失败不会发布。部署与 npm 发布独立执行，其中一项失败可重跑失败任务；已发布且内容相同的包会跳过。npm 请求异常会终止，避免错误选版。工作流串行发布，不中途取消。
+
+首次启用需要完成以下外部配置：
+
+1. GitHub 仓库 **Settings → Secrets and variables → Actions**：添加 `CLOUDFLARE_API_TOKEN`（目标账户的 Cloudflare Pages Edit 权限）和 `CLOUDFLARE_ACCOUNT_ID` 两个 Secrets。Cloudflare 项目必须已存在，生产分支为 `main`。如项目还开启了 Cloudflare Git 自动部署，请关闭该重复入口，统一由本工作流部署。
+2. npm 的 `@empjs/valtio` 包设置中添加 **Trusted Publisher → GitHub Actions**：组织 `empjs`、仓库 `valtio-best-practices`、工作流文件 `release.yml`，Environment 留空；若界面要求选择操作，允许 publish。使用 GitHub OIDC，无需 `NPM_TOKEN`。
+3. 推送 main 后在 Actions 检查 `verify`、`deploy`、`publish`。以 Wrangler 返回的部署结果及 npm 版本回读为发布证据；配置文件存在不代表线上发布成功。
+
+本地验证：
+
+```bash
+pnpm install --frozen-lockfile
+node --test scripts/release.test.mjs
+pnpm --filter @empjs/valtio test
+NODE_ENV=production pnpm --filter @empjs/valtio build
+pnpm --filter valtio-offical build
+node scripts/release.mjs
+```
+
+参考：[Cloudflare CI 部署](https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/)、[npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)。
+
 ## 技术栈
 
 - **状态**：Valtio + derive-valtio + valtio-history，封装为 `@empjs/valtio`

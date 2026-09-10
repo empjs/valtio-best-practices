@@ -1,0 +1,97 @@
+name: Verify, deploy and release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Keep publishes and production deployments in order; never interrupt a publish.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.2'
+      - run: pnpm install --frozen-lockfile
+      - run: node --test scripts/release.test.mjs
+      - run: pnpm --filter @empjs/valtio test
+      - run: pnpm --filter @empjs/valtio build
+        env:
+          NODE_ENV: production
+      - run: pnpm --filter valtio-offical build
+      - name: Validate npm package
+        run: node scripts/release.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-builds
+          path: |
+            packages/valtio/dist
+            apps/valtio-offical/dist
+          if-no-files-found: error
+
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-builds
+      - name: Deploy Cloudflare Pages
+        working-directory: apps/valtio-offical
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Missing CLOUDFLARE_API_TOKEN secret'; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Missing CLOUDFLARE_ACCOUNT_ID secret'; exit 1; }
+          pnpm exec wrangler pages deploy dist --project-name=valtio-best-practices --branch=main --commit-hash="$GITHUB_SHA"
+
+  publish:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-builds
+      - name: Select version and skip unchanged package
+        id: release
+        run: node scripts/release.mjs --write
+      - name: Publish using npm trusted publishing
+        if: steps.release.outputs.publish == 'true'
+        working-directory: packages/valtio
+        run: npm publish --access public --provenance --registry=https://registry.npmjs.org/
+      - name: Verify published version
+        if: steps.release.outputs.publish == 'true'
+        run: node scripts/release.mjs --verify

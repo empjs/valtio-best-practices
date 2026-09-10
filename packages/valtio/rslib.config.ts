@@ -4,8 +4,8 @@ const isDev = process.env.NODE_ENV !== 'production'
 
 export default defineConfig({
   lib: [
-    {format: 'esm', syntax: 'es2021', dts: true},
-    {format: 'cjs', syntax: 'es2021', dts: true},
+    {format: 'esm', syntax: 'es2021', dts: {autoExtension: true}},
+    {format: 'cjs', syntax: 'es2021', dts: {autoExtension: true}},
   ],
   source: {
     entry: {index: 'src/index.ts'},
