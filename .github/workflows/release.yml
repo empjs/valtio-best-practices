@@ -92,10 +92,12 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -111,3 +113,7 @@ jobs:
         run: npm publish --access public --provenance --registry=https://registry.npmjs.org/
       - name: Verify published version
         run: node scripts/release.mjs --verify
+      - name: Create GitHub Release with update notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/github-release.mjs
