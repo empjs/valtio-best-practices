@@ -92,17 +92,6 @@ function toJSONFromSnapshot(snap: Record<string, unknown>): Record<string, unkno
   return result
 }
 
-/**
- * valtio-history 的控制位是 getter，快照可能在 history 元数据更新前将其物化。
- * 在 Hook 渲染期从当前 history 派生控制位，保证 UI 随 undo/redo 同步更新。
- */
-function useHistorySnapshot<T extends object>(store: HistoryStore<T>): WithHistorySnapshot<T> {
-  const snap = useSnapshot(store) as unknown as WithHistorySnapshot<T>
-  const isUndoEnabled = store.history.index > 0
-  const isRedoEnabled = store.history.index < store.history.nodes.length - 1
-  return useMemo(() => ({...snap, isUndoEnabled, isRedoEnabled}), [snap, isUndoEnabled, isRedoEnabled])
-}
-
 // ============================================
 // 增强 Store 的方法集
 // ============================================
@@ -263,7 +252,7 @@ function createStoreImpl<T extends object>(
       configurable: true,
       enumerable: true,
       value: function useSnapshotFromStore() {
-        return useHistorySnapshot(hist)
+        return useSnapshot(hist) as unknown as WithHistorySnapshot<T>
       },
       writable: true,
     })
@@ -335,7 +324,7 @@ function useStoreImpl<T extends object>(
       const state = resolveInitialState(initialState)
       return proxyWithHistory(state, histOptions)
     }, [])
-    const snap = useHistorySnapshot(store as HistoryStore<T>)
+    const snap = useSnapshot(store) as unknown as WithHistorySnapshot<T>
     return [snap, store as HistoryStore<T>]
   }
   if (opts.derive != null) {
