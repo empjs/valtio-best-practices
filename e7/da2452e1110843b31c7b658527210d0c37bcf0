@@ -1,0 +1,44 @@
+packages/valtio/test/createStore.history.test.ts
+  s_1931f502b394f6::t_ddbd04a4c07b76 6
+  s_1931f502b394f6::t_0c8bcdc9f3e461 21,23-28,30-47,49
+  s_1931f502b394f6::t_25cb4c4fe9f69d 2,5
+  s_1931f502b394f6::t_2124fb4e966dd7 62,64
+  s_1931f502b394f6::t_3147866d7e8e1a 71
+  s_1931f502b394f6::t_5e3ea92e593640 20
+  s_1931f502b394f6::t_94f3281c40524d 22
+packages/valtio/test/useStore.test.tsx
+  s_1931f502b394f6::t_dc1f52aaf23693 38-56,58
+  s_1931f502b394f6::t_de6d990780eee6 28-29
+  s_1931f502b394f6::t_dac93eac3ea44e 36-37
+packages/valtio/package.json
+  s_1931f502b394f6::t_1b0830d2605807 54
+pnpm-lock.yaml
+  s_1931f502b394f6::t_6b2e8263ef9603 95-96,4000-4001,7927
+packages/valtio/src/index.ts
+  s_1931f502b394f6::t_314a8d861f9e15 255
+  s_1931f502b394f6::t_5ceff86054c7c8 327
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "e7da2452e1110843b31c7b658527210d0c37bcf0",
+  "prompts": {},
+  "logical_commit_id": "b65e979600aac0c18abb965a26bf070c7ccbd1f1",
+  "humans": {
+    "h_57c547a9622709": {
+      "author": "wangqi <wangqi@bigo.sg>"
+    }
+  },
+  "sessions": {
+    "s_1931f502b394f6": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "1ba2c70c-2489-4bb0-8c3e-067c1f322996",
+        "model": "grok-4.6"
+      },
+      "human_author": "wangqi <wangqi@bigo.sg>",
+      "total_additions": 146,
+      "total_deletions": 104
+    }
+  }
+}
