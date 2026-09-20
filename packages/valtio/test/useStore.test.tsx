@@ -25,12 +25,35 @@ describe('useStore 常规', () => {
 })
 
 describe('useStore history', () => {
+  const nextTick = () => new Promise<void>(resolve => setTimeout(resolve, 0))
+
   test('options.history 返回 value/undo/redo', () => {
     const {result} = renderHook(() => useStore({count: 0}, {history: {}}))
     const [snap, store] = result.current
     expect((snap as {value: {count: number}}).value).toEqual({count: 0})
     expect(typeof store.undo).toBe('function')
     expect(typeof store.redo).toBe('function')
+  })
+
+  test('首次写 value 后 snapshot 立即启用 undo', async () => {
+    const {result} = renderHook(() => {
+      const [snap, store] = useStore({count: 0}, {history: {}})
+      return {
+        count: snap.value.count,
+        isUndoEnabled: snap.isUndoEnabled,
+        isRedoEnabled: snap.isRedoEnabled,
+        store,
+      }
+    })
+
+    await act(async () => {
+      result.current.store.value.count = 1
+      await nextTick()
+    })
+
+    expect(result.current.count).toBe(1)
+    expect(result.current.isUndoEnabled).toBe(true)
+    expect(result.current.isRedoEnabled).toBe(false)
   })
 
   test('undo/redo 可调用', () => {
@@ -49,7 +72,6 @@ describe('useStore history', () => {
   })
 
   test('history snapshot 在撤销后启用重做，并在重做后关闭', async () => {
-    const nextTick = () => new Promise<void>(resolve => setTimeout(resolve, 0))
     const {result} = renderHook(() => {
       const [snap, store] = useStore({count: 0}, {history: {}})
       return {
