@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os'
 import {dirname, join, resolve} from 'node:path'
 import test from 'node:test'
 import {fileURLToPath} from 'node:url'
-import {fingerprint, nextVersion, selectRelease, shouldPublish} from './release.mjs'
+import {fingerprint, matchesPublishedRelease, nextVersion, npmVerifySchedule, selectRelease, shouldPublish} from './release.mjs'
 
 test('automatic patch starts from npm latest and honors explicit larger versions', () => {
   assert.equal(nextVersion('0.0.3', '0.0.3'), '0.0.4')
@@ -48,6 +48,17 @@ test('publish retries skip identical versions but fail on version collisions', (
   assert.equal(shouldPublish(prepared, prepared), false)
   assert.throws(() => shouldPublish(prepared, {...prepared, empRelease: {fingerprint: 'different-content'}}))
   assert.throws(() => shouldPublish({version: '0.0.5'}, null))
+})
+
+test('verify matches prepared fingerprints and waits about two minutes', () => {
+  const manifest = {empRelease: {fingerprint: 'abc'}}
+  assert.equal(matchesPublishedRelease({empRelease: {fingerprint: 'abc'}}, manifest), true)
+  assert.equal(matchesPublishedRelease({empRelease: {fingerprint: 'other'}}, manifest), false)
+  assert.equal(matchesPublishedRelease(null, manifest), false)
+  assert.equal(matchesPublishedRelease({empRelease: {fingerprint: 'abc'}}, {}), false)
+  assert.deepEqual(npmVerifySchedule(), Array(11).fill(10_000))
+  assert.deepEqual(npmVerifySchedule({attempts: 3, delayMs: 5}), [5, 5])
+  assert.deepEqual(npmVerifySchedule({attempts: 1}), [])
 })
 
 test('real package validation rejects stale built versions and passes after rebuilding', () => {
