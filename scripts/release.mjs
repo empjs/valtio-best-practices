@@ -64,6 +64,16 @@ export function shouldPublish(manifest, published) {
   return false
 }
 
+export function matchesPublishedRelease(published, manifest) {
+  return Boolean(
+    manifest.empRelease && published?.empRelease?.fingerprint === manifest.empRelease.fingerprint,
+  )
+}
+
+export function npmVerifySchedule({attempts = 12, delayMs = 10_000} = {}) {
+  return Array.from({length: Math.max(attempts - 1, 0)}, () => delayMs)
+}
+
 async function metadata(name, version = 'latest', allowMissing = false) {
   const response = await fetch(`${registry}/${encodeURIComponent(name)}/${version}`, {
     signal: AbortSignal.timeout(30_000),
@@ -89,15 +99,28 @@ async function main() {
     return
   }
   if (process.argv.includes('--verify')) {
-    for (let attempt = 0; attempt < 6; attempt++) {
+    const delays = npmVerifySchedule()
+    const attempts = delays.length + 1
+    let lastError = 'package metadata not available yet'
+    for (let attempt = 0; attempt < attempts; attempt++) {
       const published = await metadata(manifest.name, manifest.version).catch(() => null)
-      if (published?.empRelease?.fingerprint === manifest.empRelease?.fingerprint && manifest.empRelease) {
+      if (matchesPublishedRelease(published, manifest)) {
         console.log(`Verified ${manifest.name}@${manifest.version} on npm`)
         return
       }
-      await new Promise(resolve => setTimeout(resolve, 5000))
+      lastError = published
+        ? 'published fingerprint does not match the prepared release'
+        : 'package metadata not available yet'
+      if (attempt < delays.length) {
+        console.log(
+          `Waiting for npm to serve ${manifest.name}@${manifest.version} (attempt ${attempt + 1}/${attempts})`,
+        )
+        await new Promise(resolve => setTimeout(resolve, delays[attempt]))
+      }
     }
-    throw new Error('Published version or fingerprint could not be verified on npm')
+    throw new Error(
+      `Published version or fingerprint could not be verified on npm after ${attempts} attempts: ${lastError}`,
+    )
   }
   const [pack] = JSON.parse(
     execFileSync('npm', ['pack', '--dry-run', '--json', '--ignore-scripts'], {
